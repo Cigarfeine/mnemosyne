@@ -63,13 +63,20 @@ export default function Nav() {
                 <Link 
                   key={link.href} 
                   href={link.href} 
-                  className={`relative text-[10px] sm:text-sm font-bold px-2.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full transition-all flex items-center justify-center ${
+                  className={`relative text-[10px] sm:text-sm font-bold px-2.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full transition-colors flex items-center justify-center ${
                     isActive 
-                      ? "bg-[#1a1a1a] text-white shadow-soft" 
+                      ? "text-white" 
                       : "text-slate-500 hover:bg-slate-100/50 hover:text-[#1a1a1a]"
                   }`}
                 >
-                  {link.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-nav-pill"
+                      className="absolute inset-0 bg-[#1a1a1a] rounded-full shadow-soft"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10">{link.label}</span>
                 </Link>
               );
             })}
