@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 import { Heart } from "lucide-react";
+import Preloader from "@/components/Preloader";
 
 export default function RootLayout({
   children,
@@ -21,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${playfair.variable} font-sans text-slate-800 bg-mesh-editorial flex flex-col min-h-screen`}>
+        <Preloader />
         <Nav />
         <main className="flex-grow pt-24 sm:pt-28 md:pt-40 px-4 sm:px-6 max-w-6xl mx-auto w-full">
           {children}
