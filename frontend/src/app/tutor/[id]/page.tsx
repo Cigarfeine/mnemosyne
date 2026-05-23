@@ -22,7 +22,13 @@ export default function TutorPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (bottomRef.current?.parentElement) {
+      const container = bottomRef.current.parentElement;
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth"
+      });
+    }
   }, [messages]);
 
   const sendMessage = async () => {
@@ -42,7 +48,7 @@ export default function TutorPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-14rem)] max-w-4xl mx-auto z-10 relative bg-white/60 backdrop-blur-md rounded-[32px] border border-slate-200/60 shadow-soft overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-12rem)] max-w-5xl mx-auto z-10 relative bg-white/60 backdrop-blur-md rounded-[32px] border border-slate-200/60 shadow-soft overflow-hidden mb-8">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
