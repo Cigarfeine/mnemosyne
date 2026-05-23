@@ -36,7 +36,7 @@ export default function DocumentPage() {
   const [filteredConcepts, setFilteredConcepts] = useState<any[]>([]);
   const [selectedConcept, setSelectedConcept] = useState<any>(null);
   const [extracting, setExtracting] = useState(false);
-  const [activeTab, setActiveTab] = useState<"graph" | "list">("graph");
+  const [activeTab, setActiveTab] = useState<"graph" | "list">("list");
   const [searchQuery, setSearchQuery] = useState("");
   
   const [extractionProgress, setExtractionProgress] = useState(0);
@@ -348,16 +348,16 @@ export default function DocumentPage() {
             
             <AnimatePresence>
               {selectedConcept && (
-                  <motion.div 
+                <motion.div 
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  className="absolute inset-y-0 right-0 md:relative w-full md:w-80 border-l border-slate-200/50 bg-white/95 md:bg-white/80 backdrop-blur-md p-6 sm:p-8 overflow-y-auto z-50 md:z-10 shadow-2xl"
+                  className="absolute inset-y-4 right-4 md:relative md:inset-auto md:my-4 md:mr-4 w-[calc(100%-2rem)] md:w-80 rounded-[32px] border border-slate-200/60 bg-white/95 md:bg-white/80 backdrop-blur-xl p-6 sm:p-8 overflow-y-auto z-50 md:z-10 shadow-2xl flex flex-col"
                 >
-                  <div className="flex items-start justify-between mb-6">
-                    <h3 className="text-3xl font-serif italic text-[#1a1a1a] leading-tight pr-2">{selectedConcept.name}</h3>
-                    <button onClick={() => setSelectedConcept(null)} className="p-1 rounded-md hover:bg-slate-100 text-slate-400">
-                      ×
+                  <div className="flex items-start justify-between mb-6 gap-4">
+                    <h3 className="text-3xl font-serif italic text-[#1a1a1a] leading-tight">{selectedConcept.name}</h3>
+                    <button onClick={() => setSelectedConcept(null)} className="p-1.5 -mr-2 -mt-2 rounded-full hover:bg-slate-100 text-slate-400 flex-shrink-0 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinelinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                   </div>
                   
