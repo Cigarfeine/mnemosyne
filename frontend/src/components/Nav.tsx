@@ -73,7 +73,7 @@ export default function Nav() {
                   key={link.href} 
                   href={link.href} 
                   onMouseEnter={() => setHoveredPath(link.href)}
-                  className={`relative text-[10px] sm:text-sm font-bold px-3 py-2 sm:px-5 sm:py-2.5 rounded-full transition-colors flex items-center justify-center group ${
+                  className={`relative text-[10px] sm:text-sm font-bold px-3 py-2 sm:px-5 sm:py-2.5 rounded-full transition-colors duration-500 flex items-center justify-center group ${
                     link.href === "/contact" ? "bg-[#f8a8b8] shadow-sm ml-1" : ""
                   } ${
                     hasPill 
@@ -85,18 +85,18 @@ export default function Nav() {
                     <motion.div
                       layoutId="nav-pill"
                       className="absolute inset-0 bg-[#1a1a1a] rounded-full shadow-soft"
-                      transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
                   )}
                   <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
                     {link.label}
                     {link.href === "/contact" && (
-                      <div className={`relative overflow-hidden w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center -mr-1 sm:-mr-1.5 transition-colors duration-300 ${hasPill ? "bg-[#f8a8b8]/20" : "bg-white/50"}`}>
-                        <div className="absolute inset-0 flex items-center justify-center transition-transform duration-300 ease-[cubic-bezier(0.84,0.16,0.14,1)] group-hover:rotate-45 group-hover:-translate-y-[150%] group-hover:translate-x-[150%]">
-                          <ArrowRight className={`w-2.5 h-2.5 sm:w-3 sm:h-3 transition-colors duration-300 ${hasPill ? "text-[#f8a8b8]" : "text-[#1a1a1a]"}`} />
+                      <div className={`relative overflow-hidden w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center -mr-1 sm:-mr-1.5 transition-colors duration-500 ${hasPill ? "bg-[#f8a8b8]/20" : "bg-white/50"}`}>
+                        <div className="absolute inset-0 flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.84,0.16,0.14,1)] group-hover:rotate-45 group-hover:-translate-y-[150%] group-hover:translate-x-[150%]">
+                          <ArrowRight className={`w-2.5 h-2.5 sm:w-3 sm:h-3 transition-colors duration-500 ${hasPill ? "text-[#f8a8b8]" : "text-[#1a1a1a]"}`} />
                         </div>
-                        <div className="absolute inset-0 flex items-center justify-center transition-transform duration-300 ease-[cubic-bezier(0.84,0.16,0.14,1)] translate-y-[150%] -translate-x-[150%] -rotate-45 group-hover:translate-y-0 group-hover:translate-x-0 group-hover:rotate-0">
-                          <ArrowRight className={`w-2.5 h-2.5 sm:w-3 sm:h-3 transition-colors duration-300 ${hasPill ? "text-[#f8a8b8]" : "text-[#1a1a1a]"}`} />
+                        <div className="absolute inset-0 flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.84,0.16,0.14,1)] translate-y-[150%] -translate-x-[150%] -rotate-45 group-hover:translate-y-0 group-hover:translate-x-0 group-hover:rotate-0">
+                          <ArrowRight className={`w-2.5 h-2.5 sm:w-3 sm:h-3 transition-colors duration-500 ${hasPill ? "text-[#f8a8b8]" : "text-[#1a1a1a]"}`} />
                         </div>
                       </div>
                     )}
