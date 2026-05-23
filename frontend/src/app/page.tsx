@@ -74,7 +74,7 @@ export default function HomePage() {
 
   const getStatusIcon = (status: string) => {
     if (status === "ready") return <CheckCircle2 className="w-4 h-4 text-emerald-600" />;
-    if (status === "processing") return <Clock className="w-4 h-4 text-amber-600 animate-spin-slow" />;
+    if (status === "processing") return <Clock className="w-4 h-4 text-[#f8a8b8] animate-spin-slow" />;
     return <AlertCircle className="w-4 h-4 text-rose-600" />;
   };
 
@@ -125,7 +125,7 @@ export default function HomePage() {
                   exit={{ opacity: 0, y: -10 }}
                   className="flex flex-col items-center"
                 >
-                  <div className="w-16 h-16 rounded-full border-4 border-slate-200 border-t-slate-900 animate-spin mb-4" />
+                  <div className="w-16 h-16 rounded-full border-4 border-[#f8a8b8]/30 border-t-[#f8a8b8] animate-spin mb-4" />
                   <p className="text-lg font-bold text-slate-900 animate-pulse">Processing document...</p>
                 </motion.div>
               ) : isDragActive ? (

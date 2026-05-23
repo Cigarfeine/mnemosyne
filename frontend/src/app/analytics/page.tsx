@@ -37,7 +37,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-4 border-indigo-500/30 border-t-indigo-500 animate-spin" />
+        <div className="w-12 h-12 rounded-full border-4 border-[#f8a8b8]/30 border-t-[#f8a8b8] animate-spin" />
       </div>
     );
   }

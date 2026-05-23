@@ -161,13 +161,13 @@ export default function DocumentPage() {
     setSelectedConcept(concept || null);
   }, [concepts]);
 
-  if (!doc) return (
-    <div className="flex-1 flex items-center justify-center min-h-[60vh]">
-      <div className="w-12 h-12 rounded-full border-4 border-indigo-500/30 border-t-indigo-500 animate-spin" />
-    </div>
-  );
-
-  return (
+  if (loading || !doc) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-12 h-12 rounded-full border-4 border-[#f8a8b8]/30 border-t-[#f8a8b8] animate-spin" />
+      </div>
+    );
+  } return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}

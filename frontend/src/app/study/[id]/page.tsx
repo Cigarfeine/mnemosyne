@@ -139,7 +139,7 @@ function StudyPageContent() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-4 border-indigo-500/30 border-t-indigo-500 animate-spin" />
+          <div className="w-12 h-12 rounded-full border-4 border-[#f8a8b8]/30 border-t-[#f8a8b8] animate-spin" />
           <p className="text-slate-400 text-sm">Preparing your {studyMode === "pyq" ? "exam-style" : "study"} session...</p>
         </div>
       </div>
@@ -460,7 +460,7 @@ export default function StudyPage() {
   return (
     <Suspense fallback={
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-4 border-indigo-500/30 border-t-indigo-500 animate-spin" />
+        <div className="w-12 h-12 rounded-full border-4 border-[#f8a8b8]/30 border-t-[#f8a8b8] animate-spin" />
       </div>
     }>
       <StudyPageContent />

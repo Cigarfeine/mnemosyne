@@ -120,6 +120,7 @@ def get_study_session(document_id: str, study_mode: str = "notes", limit: int = 
         due_concept_ids = {str(c.id) for c in concepts}
 
     session_items = []
+    auto_generated_count = 0
     for c in concepts:
         if str(c.id) not in due_concept_ids:
             continue
@@ -128,6 +129,8 @@ def get_study_session(document_id: str, study_mode: str = "notes", limit: int = 
 
         # Auto-generate questions if none exist
         if not questions:
+            if auto_generated_count >= 2:
+                continue # Skip to avoid long buffering times
             try:
                 generated = generate_questions_for_concept(
                     c.name, c.definition or "No definition", c.difficulty,
@@ -146,6 +149,7 @@ def get_study_session(document_id: str, study_mode: str = "notes", limit: int = 
                     db.add(item)
                 db.commit()
                 questions = db.query(ReviewItem).filter(ReviewItem.concept_id == c.id).limit(2).all()
+                auto_generated_count += 1
             except Exception as e:
                 print(f"Auto-generation failed for {c.name}: {e}")
                 continue
