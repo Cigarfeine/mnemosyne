@@ -105,9 +105,9 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex items-center gap-4 sm:gap-5 flex-shrink-0 md:mb-1"
+            className="flex items-center gap-3 sm:gap-4 flex-shrink-0 md:mb-1 opacity-90 hover:opacity-100 transition-opacity"
           >
-            <span className="text-xl sm:text-2xl font-semibold text-slate-800 tracking-tight">Discover how</span>
+            <span className="text-lg sm:text-xl font-medium text-slate-600 tracking-tight">Discover how</span>
             <div 
               className="relative flex items-center justify-center cursor-pointer group"
               onClick={() => {
@@ -121,16 +121,16 @@ export default function HomePage() {
               }}
             >
               <motion.div 
-                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.3, 0.1] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute inset-0 bg-slate-200 rounded-full scale-150"
+                className="absolute inset-0 bg-slate-300 rounded-full scale-125"
               />
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#2a2a2a] flex items-center justify-center relative z-10 group-hover:bg-[#1a1a1a] transition-colors shadow-md">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#333] flex items-center justify-center relative z-10 group-hover:bg-[#1a1a1a] transition-colors shadow-sm">
                 <motion.div
-                  animate={{ y: [-2, 3, -2] }}
+                  animate={{ y: [-1.5, 2, -1.5] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <ArrowDown className="w-4 h-4 sm:w-5 sm:h-5 text-white stroke-[2.5]" />
+                  <ArrowDown className="w-3 h-3 sm:w-4 sm:h-4 text-white/90 stroke-2" />
                 </motion.div>
               </div>
             </div>
