@@ -11,7 +11,7 @@ export default function Preloader() {
     // Only run the preloader once per session to avoid annoying the user on every reload
     const hasLoaded = sessionStorage.getItem("mnemosyne-preloaded");
     if (hasLoaded) {
-      setIsLoading(false);
+      setTimeout(() => setIsLoading(false), 0);
       return;
     }
 

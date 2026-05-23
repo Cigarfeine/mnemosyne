@@ -33,10 +33,6 @@ function StudyPageContent() {
   const [loading, setLoading] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
-  useEffect(() => {
-    if (studyMode) loadSession();
-  }, [studyMode]);
-
   const loadSession = async () => {
     setLoading(true);
     setDone(false);
@@ -58,42 +54,14 @@ function StudyPageContent() {
     }
   };
 
+  useEffect(() => {
+    if (studyMode) loadSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studyMode]);
+
   const currentItem = session?.session_items[currentIndex];
   const currentQuestion = currentItem?.questions[questionIndex];
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      
-      if (state === "question") {
-        if (e.code === "Space" && currentQuestion?.question_type !== "mcq") {
-          e.preventDefault();
-          handleReveal();
-        }
-        if (currentQuestion?.question_type === "mcq" && currentQuestion?.options) {
-          const num = parseInt(e.key);
-          if (num >= 1 && num <= currentQuestion.options.length) {
-            handleMCQAnswer(currentQuestion.options[num - 1]);
-          }
-        }
-      }
-      if (state === "revealed") {
-        const ratingMap: Record<string, number> = { "1": 0, "2": 2, "3": 4, "4": 5 };
-        if (ratingMap[e.key] !== undefined) {
-          handleRate(ratingMap[e.key]);
-        }
-      }
-      if (e.key === "Escape") {
-        window.history.back();
-      }
-      if (e.key === "?") {
-        setShowShortcuts(s => !s);
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [state, currentQuestion]);
 
   const handleReveal = () => setState("revealed");
 
@@ -134,6 +102,41 @@ function StudyPageContent() {
     setSelectedAnswer("");
     setIsCorrect(null);
   };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      
+      if (state === "question") {
+        if (e.code === "Space" && currentQuestion?.question_type !== "mcq") {
+          e.preventDefault();
+          handleReveal();
+        }
+        if (currentQuestion?.question_type === "mcq" && currentQuestion?.options) {
+          const num = parseInt(e.key);
+          if (num >= 1 && num <= currentQuestion.options.length) {
+            handleMCQAnswer(currentQuestion.options[num - 1]);
+          }
+        }
+      }
+      if (state === "revealed") {
+        const ratingMap: Record<string, number> = { "1": 0, "2": 2, "3": 4, "4": 5 };
+        if (ratingMap[e.key] !== undefined) {
+          handleRate(ratingMap[e.key]);
+        }
+      }
+      if (e.key === "Escape") {
+        window.history.back();
+      }
+      if (e.key === "?") {
+        setShowShortcuts(s => !s);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, currentQuestion]);
 
   if (loading) {
     return (
@@ -266,8 +269,8 @@ function StudyPageContent() {
     );
   }
 
-  const totalCards = session.session_items.reduce((a: number, i: any) => a + i.questions.length, 0);
-  const completedCards = session.session_items.slice(0, currentIndex).reduce((a: number, i: any) => a + i.questions.length, 0) + questionIndex;
+  const totalCards = session.session_items.reduce((a: number, i: { questions: unknown[] }) => a + i.questions.length, 0);
+  const completedCards = session.session_items.slice(0, currentIndex).reduce((a: number, i: { questions: unknown[] }) => a + i.questions.length, 0) + questionIndex;
   const progressPercent = (completedCards / totalCards) * 100;
 
   return (

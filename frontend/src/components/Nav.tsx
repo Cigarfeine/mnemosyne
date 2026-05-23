@@ -22,12 +22,6 @@ export default function Nav() {
   const [aiMessage, setAiMessage] = useState("");
   const [showTooltip, setShowTooltip] = useState(false);
 
-  useEffect(() => {
-    checkHealth();
-    const interval = setInterval(checkHealth, 30000); // Check every 30s
-    return () => clearInterval(interval);
-  }, []);
-
   const checkHealth = async () => {
     try {
       const res = await aiAPI.health();
@@ -39,6 +33,13 @@ export default function Nav() {
       setAiMessage("Backend not reachable");
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    checkHealth();
+    const interval = setInterval(checkHealth, 30000); // Check every 30s
+    return () => clearInterval(interval);
+  }, []);
 
   const statusConfig = {
     checking: { color: "text-slate-400", bg: "bg-slate-500", pulse: true, icon: Cpu },
