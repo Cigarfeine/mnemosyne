@@ -286,19 +286,54 @@ export default function HomePage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-center py-20 bg-white/60 backdrop-blur-md rounded-[32px] border border-slate-200/60 shadow-soft"
+              className="text-center py-16 px-6 bg-white/60 backdrop-blur-md rounded-[32px] border border-slate-200/60 shadow-soft max-w-4xl mx-auto w-full"
             >
-                  <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-6">
-                    <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-sm">
-                      <UploadCloud className="w-6 h-6 text-slate-900" />
-                    </div>
+              <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-6">
+                <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-sm">
+                  <FileText className="w-6 h-6 text-[#1a1a1a]" />
+                </div>
+              </div>
+              <h3 className="text-3xl sm:text-4xl font-serif text-[#1a1a1a] tracking-tight mb-4">
+                Your library is empty
+              </h3>
+              <p className="text-slate-500 font-medium text-lg max-w-xl mx-auto mb-10">
+                Start building your cognitive knowledge base. Upload a PDF to automatically generate interactive graphs, study flashcards, and an AI tutor.
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto mb-10 text-left">
+                <div className="bg-white/50 p-6 rounded-[24px] border border-slate-100 shadow-sm">
+                  <div className="w-10 h-10 rounded-full bg-[#f8a8b8]/20 flex items-center justify-center mb-4">
+                    <span className="text-[#e6758d] font-bold">1</span>
                   </div>
-                  <h3 className="text-3xl font-serif text-[#1a1a1a] tracking-tight mb-3">
-                    Upload your materials
-                  </h3>
-                  <p className="text-slate-500 font-medium text-lg">
-                    Drag and drop your PDFs, notes, or books here.
-                  </p>
+                  <h4 className="font-bold text-slate-800 mb-2">Upload</h4>
+                  <p className="text-sm text-slate-500">Drag & drop your lecture slides, textbook chapters, or reading materials.</p>
+                </div>
+                <div className="bg-white/50 p-6 rounded-[24px] border border-slate-100 shadow-sm">
+                  <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
+                    <span className="text-emerald-600 font-bold">2</span>
+                  </div>
+                  <h4 className="font-bold text-slate-800 mb-2">Process</h4>
+                  <p className="text-sm text-slate-500">Our AI extracts core concepts, maps relationships, and builds a knowledge graph.</p>
+                </div>
+                <div className="bg-white/50 p-6 rounded-[24px] border border-slate-100 shadow-sm">
+                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                    <span className="text-blue-600 font-bold">3</span>
+                  </div>
+                  <h4 className="font-bold text-slate-800 mb-2">Master</h4>
+                  <p className="text-sm text-slate-500">Review generated flashcards and ask the AI tutor to explain your weak areas.</p>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => {
+                  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+                  if (fileInput) fileInput.click();
+                }}
+                className="bg-[#1a1a1a] text-white font-bold py-4 px-8 rounded-full hover:bg-slate-800 transition-all shadow-md inline-flex items-center gap-2"
+              >
+                <UploadCloud className="w-5 h-5" />
+                Upload First Document
+              </button>
             </motion.div>
           )
         )}
