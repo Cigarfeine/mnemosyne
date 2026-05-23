@@ -52,7 +52,7 @@ export default function Nav() {
 
   return (
     <>
-      <motion.nav layout className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 w-[95%] sm:w-[90%] max-w-5xl z-50 rounded-[24px] sm:rounded-full bg-white/60 backdrop-blur-md shadow-soft px-3 sm:px-6 py-2.5 sm:py-4 flex items-center justify-between transition-all duration-300 border border-slate-200/60">
+      <motion.nav layoutRoot className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 w-[95%] sm:w-[90%] max-w-5xl z-50 rounded-[24px] sm:rounded-full bg-white/60 backdrop-blur-md shadow-soft px-3 sm:px-6 py-2.5 sm:py-4 flex items-center justify-between transition-all duration-300 border border-slate-200/60">
         <Link href="/" className="font-serif italic font-medium tracking-tight text-lg sm:text-2xl text-[#1a1a1a] ml-1 sm:ml-2">
           Mnemosyne
         </Link>
