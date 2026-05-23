@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, BackgroundTasks, Header
 from sqlalchemy.orm import Session
 from app.models.database import get_db, Document, DocumentChunk
 from app.api.auth import get_user_id
@@ -19,7 +19,8 @@ async def upload_document(
     file: UploadFile = File(...),
     subject: str = "General",
     db: Session = Depends(get_db),
-    user_id: str = Depends(get_user_id)
+    user_id: str = Depends(get_user_id),
+    x_groq_api_key: str = Header(default=None)
 ):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported")
@@ -39,7 +40,7 @@ async def upload_document(
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    background_tasks.add_task(process_document, str(doc.id), file_path)
+    background_tasks.add_task(process_document, str(doc.id), file_path, x_groq_api_key)
 
     return {
         "document_id": str(doc.id),
@@ -49,7 +50,7 @@ async def upload_document(
     }
 
 
-def process_document(document_id: str, file_path: str):
+def process_document(document_id: str, file_path: str, api_key: str = None):
     """Background task: extract text, chunk it, store in DB."""
     from app.models.database import SessionLocal
     import traceback
@@ -63,7 +64,7 @@ def process_document(document_id: str, file_path: str):
 
         print(f"[PROCESS] Starting processing for: {doc.title} (file: {file_path})")
         
-        extracted = extract_text_from_pdf(file_path)
+        extracted = extract_text_from_pdf(file_path, api_key)
         print(f"[PROCESS] Extracted {len(extracted['text'])} chars from {extracted['total_pages']} pages")
         
         clean = clean_text(extracted["text"])
@@ -111,7 +112,8 @@ async def reprocess_document(
     document_id: str,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    user_id: str = Depends(get_user_id)
+    user_id: str = Depends(get_user_id),
+    x_groq_api_key: str = Header(default=None)
 ):
     """Re-process a document (retry text extraction + chunking)."""
     doc = db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
@@ -127,7 +129,7 @@ async def reprocess_document(
     doc.total_chunks = 0
     db.commit()
     
-    background_tasks.add_task(process_document, document_id, file_path)
+    background_tasks.add_task(process_document, document_id, file_path, x_groq_api_key)
     return {"message": "Re-processing started", "file": f"{document_id}.pdf"}
 
 

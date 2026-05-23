@@ -8,7 +8,7 @@ import traceback
 from typing import List, Dict
 
 
-def extract_text_from_pdf(file_path: str) -> Dict:
+def extract_text_from_pdf(file_path: str, api_key: str = None) -> Dict:
     """Extract text from PDF. Falls back to OCR via AI for image-based PDFs."""
     pages_text = []
     total_pages = 0
@@ -78,7 +78,7 @@ def extract_text_from_pdf(file_path: str) -> Dict:
             """OCR a single page with retry logic. Returns page dict or None."""
             for attempt in range(2):
                 try:
-                    text = _ocr_with_ai(b64_image, page_num + 1)
+                    text = _ocr_with_ai(b64_image, page_num + 1, api_key)
                     if text and text.strip():
                         print(f"  Page {page_num + 1}/{total_pages}: {len(text)} chars extracted")
                         return {"page_number": page_num + 1, "content": text.strip()}
@@ -135,7 +135,7 @@ def extract_text_from_pdf(file_path: str) -> Dict:
     }
 
 
-def _ocr_with_ai(b64_image: str, page_num: int) -> str:
+def _ocr_with_ai(b64_image: str, page_num: int, api_key: str = None) -> str:
     """Use AI vision model to extract text from a page image. Auto-falls back between providers."""
     from dotenv import load_dotenv
     load_dotenv(".env")
@@ -149,7 +149,7 @@ def _ocr_with_ai(b64_image: str, page_num: int) -> str:
     last_error = None
     for name, func in providers:
         try:
-            result = func(b64_image, page_num)
+            result = func(b64_image, page_num, api_key)
             return result
         except Exception as e:
             last_error = e
@@ -159,11 +159,12 @@ def _ocr_with_ai(b64_image: str, page_num: int) -> str:
     raise Exception(f"All OCR providers failed for page {page_num}. Last error: {last_error}")
 
 
-def _ocr_groq(b64_image: str, page_num: int) -> str:
+def _ocr_groq(b64_image: str, page_num: int, api_key: str = None) -> str:
     """OCR using Groq's vision model."""
     from groq import Groq
     
-    client = Groq(api_key=os.getenv("GROQ_API_KEY", ""))
+    key_to_use = api_key or os.getenv("GROQ_API_KEY", "")
+    client = Groq(api_key=key_to_use)
     
     response = client.chat.completions.create(
         model="meta-llama/llama-4-scout-17b-16e-instruct",
@@ -189,11 +190,12 @@ def _ocr_groq(b64_image: str, page_num: int) -> str:
     return response.choices[0].message.content.strip()
 
 
-def _ocr_gemini(b64_image: str, page_num: int) -> str:
+def _ocr_gemini(b64_image: str, page_num: int, api_key: str = None) -> str:
     """OCR using Gemini's vision model."""
     from google import genai
     
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", ""))
+    key_to_use = api_key or os.getenv("GEMINI_API_KEY", "")
+    client = genai.Client(api_key=key_to_use)
     
     response = client.models.generate_content(
         model="gemini-2.0-flash",
