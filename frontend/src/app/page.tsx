@@ -96,44 +96,46 @@ export default function HomePage() {
           <span className="font-serif italic font-medium tracking-tight pr-2">Unearth</span> your advantage.<br />
           Transform for <span className="font-serif italic font-medium tracking-tight">growth.</span>
         </h1>
-        <p className="text-slate-600 text-base sm:text-lg md:text-2xl max-w-3xl font-medium leading-relaxed">
-          Your brain is your strongest competitive advantage. We'll help you organise your study materials, embed it deeply, and transform it into genuine momentum.
-        </p>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mt-6 sm:mt-8">
+          <p className="text-slate-600 text-base sm:text-lg md:text-2xl max-w-3xl font-medium leading-relaxed">
+            Your brain is your strongest competitive advantage. We'll help you organise your study materials, embed it deeply, and transform it into genuine momentum.
+          </p>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-10 sm:mt-12 flex items-center gap-4 sm:gap-5"
-        >
-          <span className="text-xl sm:text-2xl font-semibold text-slate-800 tracking-tight">Discover how</span>
-          <div 
-            className="relative flex items-center justify-center cursor-pointer group"
-            onClick={() => {
-              const element = document.getElementById('upload-section');
-              if (element) {
-                const headerOffset = 120;
-                const elementPosition = element.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-              }
-            }}
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex items-center gap-4 sm:gap-5 flex-shrink-0 md:mb-1"
           >
-            <motion.div 
-              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute inset-0 bg-slate-200 rounded-full scale-150"
-            />
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#2a2a2a] flex items-center justify-center relative z-10 group-hover:bg-[#1a1a1a] transition-colors shadow-md">
-              <motion.div
-                animate={{ y: [-2, 3, -2] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <ArrowDown className="w-4 h-4 sm:w-5 sm:h-5 text-white stroke-[2.5]" />
-              </motion.div>
+            <span className="text-xl sm:text-2xl font-semibold text-slate-800 tracking-tight">Discover how</span>
+            <div 
+              className="relative flex items-center justify-center cursor-pointer group"
+              onClick={() => {
+                const element = document.getElementById('upload-section');
+                if (element) {
+                  const headerOffset = 120;
+                  const elementPosition = element.getBoundingClientRect().top;
+                  const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                  window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                }
+              }}
+            >
+              <motion.div 
+                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-0 bg-slate-200 rounded-full scale-150"
+              />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#2a2a2a] flex items-center justify-center relative z-10 group-hover:bg-[#1a1a1a] transition-colors shadow-md">
+                <motion.div
+                  animate={{ y: [-2, 3, -2] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <ArrowDown className="w-4 h-4 sm:w-5 sm:h-5 text-white stroke-[2.5]" />
+                </motion.div>
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </motion.div>
 
       <motion.div 
