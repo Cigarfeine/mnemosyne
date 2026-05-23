@@ -66,4 +66,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the r
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Copyright (c) 2026. All rights reserved.
+
+This project is provided for portfolio and demonstration purposes only. You may view and study the Source Code for educational purposes, but you may not copy, modify, distribute, or deploy this software without explicit permission. See the [LICENSE](LICENSE) file for details.
