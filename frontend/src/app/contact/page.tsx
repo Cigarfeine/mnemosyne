@@ -166,29 +166,22 @@ export default function ContactPage() {
         )}
       </motion.div>
       
-      <motion.div variants={itemVariants} className="mt-10 sm:mt-16 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-        <motion.a variants={itemVariants} whileHover={{ scale: 1.03, y: -4 }} whileTap={{ scale: 0.97 }} href="https://wa.me/917736889417" target="_blank" rel="noopener noreferrer" aria-label="Message me on WhatsApp" className="bg-white/60 backdrop-blur-md rounded-[20px] sm:rounded-[24px] p-5 sm:p-6 border border-slate-200/80 shadow-sm hover:bg-white/90 hover:shadow-md transition-colors transition-shadow flex items-center gap-4 sm:gap-5 group cursor-pointer overflow-hidden">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-[16px] sm:rounded-[18px] bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
-             <MessageCircle className="w-5 h-5 sm:w-7 sm:h-7 text-emerald-500" />
-          </div>
-          <h3 className="text-lg sm:text-xl font-serif italic text-[#1a1a1a] pr-2">WhatsApp</h3>
-        </motion.a>
-
-        <motion.a variants={itemVariants} whileHover={{ scale: 1.03, y: -4 }} whileTap={{ scale: 0.97 }} href="https://instagram.com/ar.shaed" target="_blank" rel="noopener noreferrer" aria-label="Follow me on Instagram" className="bg-white/60 backdrop-blur-md rounded-[20px] sm:rounded-[24px] p-5 sm:p-6 border border-slate-200/80 shadow-sm hover:bg-white/90 hover:shadow-md transition-colors transition-shadow flex items-center gap-4 sm:gap-5 group cursor-pointer overflow-hidden">
+      <motion.div variants={itemVariants} className="mt-10 sm:mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <motion.a variants={itemVariants} whileHover={{ scale: 1.03, y: -4 }} whileTap={{ scale: 0.97 }} href="https://instagram.com/ar.shaed" target="_blank" rel="noopener noreferrer" aria-label="Follow me on Instagram" className="bg-white/60 backdrop-blur-md rounded-[20px] sm:rounded-[24px] p-5 sm:p-6 border border-slate-200/80 shadow-sm hover:bg-white/90 hover:shadow-md transition-colors transition-shadow flex items-center justify-center sm:justify-start gap-4 sm:gap-5 group cursor-pointer overflow-hidden">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-[16px] sm:rounded-[18px] bg-pink-50 border border-pink-100 flex items-center justify-center flex-shrink-0">
              <Camera className="w-5 h-5 sm:w-7 sm:h-7 text-pink-500" />
           </div>
           <h3 className="text-lg sm:text-xl font-serif italic text-[#1a1a1a] pr-2">Instagram</h3>
         </motion.a>
 
-        <motion.a variants={itemVariants} whileHover={{ scale: 1.03, y: -4 }} whileTap={{ scale: 0.97 }} href="https://github.com/Cigarfeine" target="_blank" rel="noopener noreferrer" aria-label="Check out my GitHub" className="bg-white/60 backdrop-blur-md rounded-[20px] sm:rounded-[24px] p-5 sm:p-6 border border-slate-200/80 shadow-sm hover:bg-white/90 hover:shadow-md transition-colors transition-shadow flex items-center gap-4 sm:gap-5 group cursor-pointer overflow-hidden">
+        <motion.a variants={itemVariants} whileHover={{ scale: 1.03, y: -4 }} whileTap={{ scale: 0.97 }} href="https://github.com/Cigarfeine" target="_blank" rel="noopener noreferrer" aria-label="Check out my GitHub" className="bg-white/60 backdrop-blur-md rounded-[20px] sm:rounded-[24px] p-5 sm:p-6 border border-slate-200/80 shadow-sm hover:bg-white/90 hover:shadow-md transition-colors transition-shadow flex items-center justify-center sm:justify-start gap-4 sm:gap-5 group cursor-pointer overflow-hidden">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-[16px] sm:rounded-[18px] bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
              <Code className="w-5 h-5 sm:w-7 sm:h-7 text-slate-800" />
           </div>
           <h3 className="text-lg sm:text-xl font-serif italic text-[#1a1a1a] pr-2">GitHub</h3>
         </motion.a>
 
-        <motion.a variants={itemVariants} whileHover={{ scale: 1.03, y: -4 }} whileTap={{ scale: 0.97 }} href="https://arshadrafi.dev" target="_blank" rel="noopener noreferrer" aria-label="Visit my Portfolio" className="bg-white/60 backdrop-blur-md rounded-[20px] sm:rounded-[24px] p-5 sm:p-6 border border-slate-200/80 shadow-sm hover:bg-white/90 hover:shadow-md transition-colors transition-shadow flex items-center gap-4 sm:gap-5 group cursor-pointer overflow-hidden">
+        <motion.a variants={itemVariants} whileHover={{ scale: 1.03, y: -4 }} whileTap={{ scale: 0.97 }} href="https://arshadrafi.dev" target="_blank" rel="noopener noreferrer" aria-label="Visit my Portfolio" className="bg-white/60 backdrop-blur-md rounded-[20px] sm:rounded-[24px] p-5 sm:p-6 border border-slate-200/80 shadow-sm hover:bg-white/90 hover:shadow-md transition-colors transition-shadow flex items-center justify-center sm:justify-start gap-4 sm:gap-5 group cursor-pointer overflow-hidden">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-[16px] sm:rounded-[18px] bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
              <Globe className="w-5 h-5 sm:w-7 sm:h-7 text-blue-500" />
           </div>
