@@ -399,22 +399,22 @@ function StudyPageContent() {
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className={`mt-4 p-5 rounded-2xl text-sm border ${isCorrect === false ? "bg-rose-50 border-rose-200 text-rose-700" : "bg-emerald-50 border-emerald-200 text-emerald-700"}`}
+                  className={`mt-6 p-6 rounded-3xl text-sm border shadow-sm backdrop-blur-md ${isCorrect === false ? "bg-rose-50/50 border-rose-200/60 text-rose-900" : "bg-white/60 border-slate-200/60 text-[#1a1a1a]"}`}
                 >
-                  <p className="font-bold mb-2 flex items-center gap-2 text-base">
+                  <p className="font-serif italic text-xl mb-4 flex items-center gap-2">
                     {isCorrect === false ? (
-                      <><span className="w-2 h-2 rounded-full bg-rose-500" /> Incorrect</>
+                      <><span className="w-2.5 h-2.5 rounded-full bg-rose-400 shadow-sm" /> Incorrect</>
                     ) : (
-                      <><span className="w-2 h-2 rounded-full bg-emerald-500" /> Correct Answer</>
+                      <><span className="w-2.5 h-2.5 rounded-full bg-[#f8a8b8] shadow-sm" /> Correct Answer</>
                     )}
                   </p>
-                  <div className="text-slate-900 text-base mb-3 bg-white p-3 rounded-lg border border-slate-200 font-medium prose prose-slate max-w-none prose-p:my-0">
+                  <div className="text-slate-800 text-base mb-4 bg-white/80 backdrop-blur shadow-sm p-5 rounded-2xl border border-slate-200/60 font-medium prose prose-slate max-w-none prose-p:my-0">
                     <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
                       {currentQuestion.correct_answer}
                     </ReactMarkdown>
                   </div>
                   {currentQuestion.explanation && (
-                    <div className="mt-3 text-sm opacity-90 leading-relaxed border-t border-slate-200 pt-3 text-slate-700 prose prose-sm prose-slate max-w-none prose-p:my-0">
+                    <div className="mt-4 text-sm leading-relaxed border-t border-slate-200/50 pt-4 text-slate-600 prose prose-sm prose-slate max-w-none prose-p:my-0">
                       <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
                         {currentQuestion.explanation}
                       </ReactMarkdown>
