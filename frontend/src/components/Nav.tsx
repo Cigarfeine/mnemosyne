@@ -54,18 +54,8 @@ export default function Nav() {
 
   return (
     <>
-      <motion.nav layout className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 w-[95%] sm:w-[90%] max-w-5xl z-50 px-3 sm:px-6 py-2.5 sm:py-4 flex items-center justify-between transition-all duration-300">
-        
-        {/* Liquid Glass Background Layer */}
-        <div 
-          className="absolute inset-0 -z-10 rounded-[24px] sm:rounded-full bg-gradient-to-r from-transparent via-white/50 to-white/80 backdrop-blur-3xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.15),_0_0_0_1px_rgba(255,255,255,0.4)_inset] border border-white/20"
-          style={{
-            maskImage: "linear-gradient(to right, transparent 0%, black 15%, black 100%)",
-            WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 15%, black 100%)"
-          }}
-        />
-
-        <Link href="/" className="font-serif italic font-medium tracking-tight text-lg sm:text-2xl text-[#1a1a1a] ml-1 sm:ml-2 hover:opacity-70 transition-opacity drop-shadow-sm">
+      <motion.nav layout className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 w-[95%] sm:w-[90%] max-w-5xl z-50 rounded-[24px] sm:rounded-full bg-gradient-to-b from-white/80 to-white/50 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.15),_0_1px_3px_rgba(255,255,255,0.8)_inset,_0_0_0_1px_rgba(255,255,255,0.3)_inset] px-3 sm:px-6 py-2.5 sm:py-4 flex items-center justify-between transition-all duration-300 border border-white/40">
+        <Link href="/" className="font-serif italic font-medium tracking-tight text-lg sm:text-2xl text-[#1a1a1a] ml-1 sm:ml-2 hover:opacity-70 transition-opacity">
           Mnemosyne
         </Link>
         <div className="flex items-center gap-1 sm:gap-3">
