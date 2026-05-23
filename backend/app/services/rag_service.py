@@ -27,9 +27,7 @@ def retrieve_relevant_chunks(query: str, document_id: str, db: Session, top_k: i
 
             return [{"content": r[0], "chunk_index": r[1], "similarity": r[2]} for r in results]
 
-    # Fallback: keyword matching
     query_words = set(query.lower().split())
-    # Remove common stop words
     stop_words = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
                   'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
                   'should', 'may', 'might', 'can', 'shall', 'to', 'of', 'in', 'for',

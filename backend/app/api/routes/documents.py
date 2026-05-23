@@ -24,7 +24,6 @@ async def upload_document(
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported")
 
-    # Create document record first to get its ID
     doc = Document(
         title=file.filename.replace(".pdf", ""),
         filename=file.filename,
@@ -36,7 +35,6 @@ async def upload_document(
     db.commit()
     db.refresh(doc)
 
-    # Save file using document ID so we can always find it
     file_path = os.path.join(UPLOAD_DIR, f"{doc.id}.pdf")
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -120,12 +118,10 @@ async def reprocess_document(
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
     
-    # Find the PDF file by document ID (upload saves as {doc.id}.pdf)
     file_path = os.path.join(UPLOAD_DIR, f"{document_id}.pdf")
     if not os.path.exists(file_path):
         raise HTTPException(status_code=400, detail="PDF file not found for this document")
     
-    # Clear existing chunks
     db.query(DocumentChunk).filter(DocumentChunk.document_id == document_id).delete()
     doc.status = "processing"
     doc.total_chunks = 0
@@ -180,7 +176,6 @@ def delete_document(document_id: str, db: Session = Depends(get_db), user_id: st
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
     
-    # Delete associated StudySessions and ChatMessages manually to avoid FK constraint errors
     from app.models.database import StudySession, ChatMessage
     db.query(StudySession).filter(StudySession.document_id == document_id).delete()
     db.query(ChatMessage).filter(ChatMessage.document_id == document_id).delete()
@@ -188,7 +183,6 @@ def delete_document(document_id: str, db: Session = Depends(get_db), user_id: st
     db.delete(doc)
     db.commit()
     
-    # Also delete the physical file
     file_path = os.path.join(UPLOAD_DIR, f"{doc.id}.pdf")
     if os.path.exists(file_path):
         os.remove(file_path)

@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import documents, concepts, memory, recall, tutor
 from app.models.database import Base, engine
 
-# Create tables automatically on startup
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -54,13 +53,10 @@ def extraction_progress(document_id: str):
         total_chunks = doc.total_chunks or 0
         concepts = db.query(Concept).filter(Concept.document_id == document_id).count()
         
-        # Estimate: ~8 seconds per chunk for AI extraction
-        # Each chunk typically yields ~2 concepts, so we compare concepts to chunks×2
         expected_concepts = total_chunks * 2
         estimated_seconds = max(0, (total_chunks - min(concepts, total_chunks)) * 8)
         progress = min(100, int((concepts / max(expected_concepts, 1)) * 100))
         
-        # Status: done only when we have a meaningful number of concepts relative to chunks
         is_done = concepts > 0 and (progress >= 90 or doc.status == "ready")
         
         return {

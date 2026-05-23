@@ -81,7 +81,6 @@ def run_question_generation(concept_ids: list, study_mode: str = "notes", api_ke
 
 @router.get("/questions/{concept_id}")
 def get_questions(concept_id: str, db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
-    # Verify ownership
     concept = db.query(Concept).join(Document).filter(Concept.id == concept_id, Document.user_id == user_id).first()
     if not concept:
         raise HTTPException(status_code=404, detail="Concept not found or unauthorized")
@@ -120,7 +119,6 @@ def get_study_session(document_id: str, study_mode: str = "notes", limit: int = 
         if record and record.next_review and record.next_review <= datetime.utcnow():
             due_concept_ids.add(str(c.id))
 
-    # If no concepts are due, include all (first-time study or all mastered)
     if not due_concept_ids:
         due_concept_ids = {str(c.id) for c in concepts}
 
@@ -132,7 +130,6 @@ def get_study_session(document_id: str, study_mode: str = "notes", limit: int = 
 
         questions = db.query(ReviewItem).filter(ReviewItem.concept_id == c.id).limit(2).all()
 
-        # Auto-generate questions if none exist
         if not questions:
             if auto_generated_count >= 2:
                 continue # Skip to avoid long buffering times

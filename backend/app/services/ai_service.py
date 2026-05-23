@@ -6,14 +6,10 @@ from dotenv import load_dotenv
 
 load_dotenv(".env")
 
-# --- Groq Setup ---
 from groq import Groq
 GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it"]
 
 
-# =============================================================================
-# PROMPTS
-# =============================================================================
 
 CONCEPT_EXTRACTION_PROMPT = """You are an expert educator and knowledge architect. Analyze the following study material and extract the key concepts.
 
@@ -148,9 +144,6 @@ Student's weak concepts: {weak_concepts}
 Document context: {context}"""
 
 
-# =============================================================================
-# API CALL HELPERS
-# =============================================================================
 
 def _call_groq(api_key: str, prompt: str, system_prompt: str = None, history: list = None, max_tokens: int = 4096) -> str:
     """Call Groq API with retry and model fallback."""
@@ -250,9 +243,6 @@ def get_ai_health(api_key: str = None) -> dict:
     return result
 
 
-# =============================================================================
-# PUBLIC API FUNCTIONS
-# =============================================================================
 
 def extract_concepts_from_chunk(api_key: str, text: str) -> list:
     try:

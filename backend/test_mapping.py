@@ -9,11 +9,9 @@ print(f"Filename: {d.filename}")
 print(f"Status: {d.status}")
 print(f"Chunks: {d.total_chunks}")
 
-# Check if file exists with the doc ID as filename
 path_docid = f"uploads/{doc_id}.pdf"
 print(f"File at uploads/{{doc_id}}.pdf exists: {os.path.exists(path_docid)}")
 
-# List all PDF files
 for f in os.listdir("uploads"):
     if f.endswith(".pdf"):
         print(f"  upload: {f} ({os.path.getsize(f'uploads/{f}')} bytes)")

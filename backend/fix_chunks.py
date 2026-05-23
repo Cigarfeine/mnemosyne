@@ -15,7 +15,6 @@ try:
     print(f"Document: {doc.title} (ID: {doc.id})")
     print(f"Current status: {doc.status}, chunks: {doc.total_chunks}")
     
-    # Find the PDF file - try the most recent 1.2MB file (Permutation and Combination)
     uploads = []
     for f in os.listdir("uploads"):
         if f.endswith(".pdf"):
@@ -23,17 +22,14 @@ try:
             mtime = os.path.getmtime(f"uploads/{f}")
             uploads.append((f, size, mtime))
     
-    # Sort by modification time, newest first
     uploads.sort(key=lambda x: x[2], reverse=True)
     print(f"\nMost recent uploads:")
     for name, size, mtime in uploads[:3]:
         print(f"  {name} - {size} bytes")
     
-    # Use the most recent upload
     pdf_file = f"uploads/{uploads[0][0]}"
     print(f"\nProcessing: {pdf_file}")
     
-    # Extract text
     result = extract_text_from_pdf(pdf_file)
     print(f"Pages: {result['total_pages']}")
     print(f"Text length: {len(result['text'])}")
@@ -45,17 +41,14 @@ try:
     
     print(f"First 200 chars: {result['text'][:200]}")
     
-    # Clean and chunk
     clean = clean_text(result['text'])
     print(f"Clean text length: {len(clean)}")
     
     chunks = chunk_text(clean, max_tokens=500, overlap_tokens=50)
     print(f"Chunks created: {len(chunks)}")
     
-    # Delete existing chunks
     db.query(DocumentChunk).filter(DocumentChunk.document_id == str(doc.id)).delete()
     
-    # Store new chunks
     for chunk in chunks:
         db_chunk = DocumentChunk(
             document_id=str(doc.id),
@@ -64,7 +57,6 @@ try:
         )
         db.add(db_chunk)
     
-    # Update document
     doc.total_pages = result["total_pages"]
     doc.total_chunks = len(chunks)
     doc.status = "ready"
@@ -72,7 +64,6 @@ try:
     db.commit()
     print(f"\nSUCCESS: Stored {len(chunks)} chunks for document {doc.id}")
     
-    # Verify
     stored = db.query(DocumentChunk).filter(DocumentChunk.document_id == str(doc.id)).count()
     print(f"Verified: {stored} chunks in database")
 

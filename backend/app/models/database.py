@@ -9,7 +9,6 @@ load_dotenv(".env")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./mnemosyne.db")
 
-# Use try/except for pgvector - fall back gracefully if not available
 try:
     from pgvector.sqlalchemy import Vector
     HAS_PGVECTOR = True

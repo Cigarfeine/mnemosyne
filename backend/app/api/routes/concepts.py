@@ -46,7 +46,6 @@ def run_concept_extraction(document_id: str, user_id: str, api_key: str):
 
         seen_concept_names = set()
         
-        # Load existing concepts in case this is a retry
         existing = db.query(Concept).filter(Concept.document_id == document_id).all()
         for e in existing:
             seen_concept_names.add(e.name.lower())
@@ -87,7 +86,6 @@ def run_concept_extraction(document_id: str, user_id: str, api_key: str):
                 db.add(memory)
                 total_extracted += 1
 
-            # Commit after each chunk so the progress endpoint sees the new concepts immediately
             db.commit()
 
         print(f"Extracted {total_extracted} concepts from document {document_id}")

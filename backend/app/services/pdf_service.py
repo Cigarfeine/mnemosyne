@@ -13,7 +13,6 @@ def extract_text_from_pdf(file_path: str) -> Dict:
     pages_text = []
     total_pages = 0
 
-    # First try pdfplumber (fast, for text-based PDFs)
     try:
         with pdfplumber.open(file_path) as pdf:
             total_pages = len(pdf.pages)
@@ -27,7 +26,6 @@ def extract_text_from_pdf(file_path: str) -> Dict:
     except Exception as e:
         print(f"pdfplumber error: {e}")
 
-    # If pdfplumber extracted text, use it
     full_text = "\n\n".join([p["content"] for p in pages_text])
 
     if len(full_text.strip()) > 100:
@@ -39,7 +37,6 @@ def extract_text_from_pdf(file_path: str) -> Dict:
             "metadata": {}
         }
 
-    # Second try PyMuPDF text extraction before resorting to OCR
     try:
         doc = fitz.open(file_path)
         total_pages = len(doc)
@@ -65,7 +62,6 @@ def extract_text_from_pdf(file_path: str) -> Dict:
     except Exception as e:
         print(f"PyMuPDF text extraction error: {e}")
 
-    # Fallback: Image-based PDF — use PyMuPDF to render pages and OCR via AI
     print(f"[PDF] No text found via pdfplumber/fitz. Attempting image-based OCR for {total_pages} pages...")
     pages_text = []
 
@@ -90,7 +86,6 @@ def extract_text_from_pdf(file_path: str) -> Dict:
                 except Exception as e:
                     error_str = str(e)
                     if "All OCR providers failed" in error_str:
-                        # Both providers tried and failed - no point retrying
                         print(f"  Page {page_num + 1}/{total_pages}: All providers failed, skipping.")
                         return None
                     if attempt == 0 and ("429" in error_str or "RESOURCE_EXHAUSTED" in error_str or "rate" in error_str.lower()):
@@ -101,7 +96,6 @@ def extract_text_from_pdf(file_path: str) -> Dict:
                         return None
             return None
 
-        # Pre-render all page images (fast, CPU-only)
         page_images = []
         for page_num in range(total_pages):
             page = doc[page_num]
@@ -111,7 +105,6 @@ def extract_text_from_pdf(file_path: str) -> Dict:
             page_images.append((page_num, b64_image))
         doc.close()
 
-        # Process pages concurrently (3 workers to balance speed vs rate limits)
         with ThreadPoolExecutor(max_workers=3) as executor:
             futures = {
                 executor.submit(_ocr_single_page, pn, img): pn
@@ -125,7 +118,6 @@ def extract_text_from_pdf(file_path: str) -> Dict:
                 if result:
                     pages_text.append(result)
 
-        # Sort by page number since concurrent execution returns out of order
         pages_text.sort(key=lambda p: p["page_number"])
 
     except Exception as e:
@@ -150,7 +142,6 @@ def _ocr_with_ai(b64_image: str, page_num: int) -> str:
     
     provider = os.getenv("OCR_PROVIDER", "gemini").lower()
     
-    # Try primary provider first, then fallback
     providers = [("gemini", _ocr_gemini), ("groq", _ocr_groq)]
     if provider == "groq":
         providers = [("groq", _ocr_groq), ("gemini", _ocr_gemini)]
