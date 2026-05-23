@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${playfair.variable} font-sans text-slate-800 bg-mesh-editorial`}>
         <Nav />
-        <div className="min-h-screen pt-40 pb-12 px-6 max-w-6xl mx-auto">
+        <div className="min-h-screen pt-24 sm:pt-28 md:pt-40 pb-12 px-4 sm:px-6 max-w-6xl mx-auto">
           {children}
         </div>
       </body>

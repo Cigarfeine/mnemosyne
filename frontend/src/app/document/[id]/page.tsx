@@ -174,56 +174,56 @@ export default function DocumentPage() {
       className="flex flex-col h-[calc(100vh-14rem)] bg-white/60 backdrop-blur-md rounded-[32px] overflow-hidden border border-slate-200/60 shadow-soft"
     >
       {/* Header */}
-      <div className="border-b border-slate-200/50 px-8 py-6 flex items-center justify-between bg-white/40 relative z-10">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="p-3 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50 text-slate-500 hover:text-slate-700 transition-colors">
-            <ArrowLeft className="w-5 h-5" />
+      <div className="border-b border-slate-200/50 px-4 sm:px-8 py-4 sm:py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0 bg-white/40 relative z-10">
+        <div className="flex items-start md:items-center gap-3 sm:gap-6 w-full md:w-auto">
+          <Link href="/" className="p-2 sm:p-3 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50 text-slate-500 hover:text-slate-700 transition-colors mt-1 md:mt-0 flex-shrink-0">
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Link>
-          <div>
-            <h1 className="text-4xl font-serif italic text-[#1a1a1a] tracking-tight flex items-center gap-3 pr-2">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif italic text-[#1a1a1a] tracking-tight flex items-center gap-3 pr-2 truncate">
               {doc.title}
             </h1>
-            <div className="flex items-center gap-3 mt-1.5 text-xs font-medium text-slate-500">
-              <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full border border-primary/20">{doc.subject}</span>
-              <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> {doc.total_pages} pages</span>
-              <span className="flex items-center gap-1"><BrainCircuit className="w-3.5 h-3.5" /> {doc.total_chunks} chunks</span>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1.5 text-[10px] sm:text-xs font-medium text-slate-500">
+              <span className="bg-primary/10 text-primary px-2 sm:px-2.5 py-0.5 rounded-full border border-primary/20">{doc.subject}</span>
+              <span className="flex items-center gap-1"><FileText className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> {doc.total_pages} pages</span>
+              <span className="flex items-center gap-1"><BrainCircuit className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> {doc.total_chunks} chunks</span>
               {concepts.length > 0 && (
-                <span className="flex items-center gap-1 text-emerald-600"><Sparkles className="w-3.5 h-3.5" /> {concepts.length} concepts</span>
+                <span className="flex items-center gap-1 text-emerald-600"><Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> {concepts.length} concepts</span>
               )}
             </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto mt-2 md:mt-0">
           {concepts.length === 0 && !extracting && (
             <button
               onClick={triggerExtraction}
               disabled={extracting}
-              className="flex items-center gap-2 text-sm bg-primary hover:bg-[#f2663c] text-white px-6 py-3 rounded-full font-bold transition-colors shadow-glow-primary disabled:opacity-50"
+              className="flex flex-1 md:flex-none items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-primary hover:bg-[#f2663c] text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold transition-colors shadow-glow-primary disabled:opacity-50"
             >
-              <Zap className="w-4 h-4" /> Extract Concepts
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Extract Concepts</span><span className="sm:hidden">Extract</span>
             </button>
           )}
           
-          <Link href={`/study/${docId}?mode=notes`} className="flex items-center gap-2 text-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm px-6 py-3 rounded-full font-bold transition-colors">
-            <BookOpen className="w-4 h-4 text-slate-500" /> Notes Study
+          <Link href={`/study/${docId}?mode=notes`} className="flex flex-1 md:flex-none items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold transition-colors">
+            <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" /> Notes
           </Link>
-          <Link href={`/study/${docId}?mode=pyq`} className="flex items-center gap-2 text-sm bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white px-6 py-3 rounded-full font-bold transition-colors shadow-sm">
-            <Target className="w-4 h-4" /> PYQ Analysis
+          <Link href={`/study/${docId}?mode=pyq`} className="flex flex-1 md:flex-none items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold transition-colors shadow-sm">
+            <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> PYQ
           </Link>
           
-          <Link href={`/tutor/${docId}`} className="flex items-center gap-2 text-sm bg-[#f8a8b8] hover:bg-[#f292a5] text-slate-900 shadow-sm px-6 py-3 rounded-full font-bold transition-colors">
-            <Activity className="w-4 h-4 text-slate-900" /> AI Tutor
+          <Link href={`/tutor/${docId}`} className="flex flex-1 md:flex-none items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-[#f8a8b8] hover:bg-[#f292a5] text-slate-900 shadow-sm px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold transition-colors">
+            <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-900" /> Tutor
           </Link>
 
-          <div className="w-px h-8 bg-slate-200 mx-2"></div>
+          <div className="w-px h-8 bg-slate-200 mx-2 hidden md:block"></div>
 
           <button 
             onClick={handleDelete}
-            className="p-2.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-500 border border-rose-100 transition-colors"
+            className="p-2 sm:p-2.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-500 border border-rose-100 transition-colors ml-auto md:ml-0"
             title="Remove Document"
           >
-            <Trash2 className="w-5 h-5" />
+            <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>
@@ -276,8 +276,8 @@ export default function DocumentPage() {
       </AnimatePresence>
 
       {/* Tabs */}
-      <div className="flex items-center justify-between border-b border-slate-200/50 px-8 bg-white/40 relative z-10">
-        <div className="flex">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-200/50 px-4 sm:px-8 bg-white/40 relative z-10 gap-3 sm:gap-0 pt-2 sm:pt-0 pb-2 sm:pb-0">
+        <div className="flex overflow-x-auto w-full sm:w-auto scrollbar-hide">
           {(["graph", "list"] as const).map((tab) => (
             <button
               key={tab}
@@ -350,7 +350,7 @@ export default function DocumentPage() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  className="w-80 border-l border-slate-200/50 bg-white/80 backdrop-blur-md p-8 overflow-y-auto relative z-10 shadow-2xl"
+                  className="absolute inset-y-0 right-0 md:relative w-full md:w-80 border-l border-slate-200/50 bg-white/95 md:bg-white/80 backdrop-blur-md p-6 sm:p-8 overflow-y-auto z-50 md:z-10 shadow-2xl"
                 >
                   <div className="flex items-start justify-between mb-6">
                     <h3 className="text-3xl font-serif italic text-[#1a1a1a] leading-tight pr-2">{selectedConcept.name}</h3>
