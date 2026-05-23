@@ -2,7 +2,7 @@
 
 A beautiful, AI-powered study companion that uses active recall, spaced repetition, and advanced PDF processing to help you learn faster and ace your exams. 
 
-![Mnemosyne Hero Banner](marrow.png) <!-- Replace with a real screenshot later -->
+![Mnemosyne Hero Banner](mnemosyne-hero.png)
 
 ## ✨ Features
 

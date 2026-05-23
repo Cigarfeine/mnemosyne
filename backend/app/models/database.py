@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv(".env")
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/mnemosyne")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./mnemosyne.db")
 
 # Use try/except for pgvector - fall back gracefully if not available
 try:
