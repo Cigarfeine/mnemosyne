@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useRouter } from "next/navigation";
 import ReactFlow, {
   Node, Edge, Background, Controls, MiniMap,
@@ -43,6 +44,9 @@ export default function DocumentPage() {
   const [extractionETA, setExtractionETA] = useState(0);
   const [extractionStartTime, setExtractionStartTime] = useState<number | null>(null);
   const [extractionElapsed, setExtractionElapsed] = useState(0);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     loadDocument();
@@ -379,85 +383,88 @@ export default function DocumentPage() {
         )}
       </div>
 
-      {/* Global Concept Modal */}
-      <AnimatePresence>
-        {selectedConcept && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
-          >
-            <div 
-              className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"
-              onClick={() => setSelectedConcept(null)}
-            />
+      {/* Global Concept Modal (Rendered via Portal to escape parent layout bounds) */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {selectedConcept && (
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-3xl max-h-[90vh] rounded-[32px] border border-slate-200/60 bg-white/95 backdrop-blur-xl shadow-2xl flex flex-col overflow-hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
             >
-              {/* Sticky Header */}
-              <div className="flex items-start justify-between p-8 sm:p-10 pb-6 shrink-0 border-b border-slate-100/50">
-                <h3 className="text-4xl sm:text-5xl font-serif italic text-[#1a1a1a] leading-tight pr-4">{selectedConcept.name}</h3>
-                <button onClick={() => setSelectedConcept(null)} className="p-2 -mr-2 -mt-2 rounded-full hover:bg-slate-100 text-slate-400 flex-shrink-0 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-              </div>
-              
-              {/* Scrollable Content */}
-              <div className="p-8 sm:p-10 py-8 overflow-y-auto flex-1 custom-scrollbar">
-                <div className="mb-8">
-                  <span className="inline-block text-xs font-bold bg-[#f8a8b8]/15 text-[#e6758d] border border-[#f8a8b8]/30 px-3 py-1.5 rounded-lg uppercase tracking-wider">
-                    {selectedConcept.category}
-                  </span>
+              <div 
+                className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"
+                onClick={() => setSelectedConcept(null)}
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="relative w-full max-w-3xl max-h-[90vh] rounded-[32px] border border-slate-200/60 bg-white/95 backdrop-blur-xl shadow-2xl flex flex-col overflow-hidden"
+              >
+                {/* Sticky Header */}
+                <div className="flex items-start justify-between p-8 sm:p-10 pb-6 shrink-0 border-b border-slate-100/50">
+                  <h3 className="text-4xl sm:text-5xl font-serif italic text-[#1a1a1a] leading-tight pr-4">{selectedConcept.name}</h3>
+                  <button onClick={() => setSelectedConcept(null)} className="p-2 -mr-2 -mt-2 rounded-full hover:bg-slate-100 text-slate-400 flex-shrink-0 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  </button>
                 </div>
                 
-                <div className="prose prose-slate max-w-none">
-                  <p className="text-slate-600 leading-relaxed text-base sm:text-lg">{selectedConcept.definition}</p>
-                </div>
-                
-                {selectedConcept.prerequisites?.length > 0 && (
-                  <div className="mt-10">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Prerequisites</p>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedConcept.prerequisites.map((p: string) => (
-                        <span key={p} className="text-sm font-semibold border border-slate-200 bg-slate-50 text-slate-600 px-3 py-1.5 rounded-xl">
-                          {p}
-                        </span>
+                {/* Scrollable Content */}
+                <div className="p-8 sm:p-10 py-8 overflow-y-auto flex-1 custom-scrollbar">
+                  <div className="mb-8">
+                    <span className="inline-block text-xs font-bold bg-[#f8a8b8]/15 text-[#e6758d] border border-[#f8a8b8]/30 px-3 py-1.5 rounded-lg uppercase tracking-wider">
+                      {selectedConcept.category}
+                    </span>
+                  </div>
+                  
+                  <div className="prose prose-slate max-w-none">
+                    <p className="text-slate-600 leading-relaxed text-base sm:text-lg">{selectedConcept.definition}</p>
+                  </div>
+                  
+                  {selectedConcept.prerequisites?.length > 0 && (
+                    <div className="mt-10">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Prerequisites</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedConcept.prerequisites.map((p: string) => (
+                          <span key={p} className="text-sm font-semibold border border-slate-200 bg-slate-50 text-slate-600 px-3 py-1.5 rounded-xl">
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="mt-10 pt-8 border-t border-slate-100">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Complexity</p>
+                    <div className="flex items-center gap-1.5">
+                      {[1,2,3,4,5].map(i => (
+                        <Zap key={i} className={`w-5 h-5 ${i <= selectedConcept.difficulty ? 'text-amber-500 fill-amber-500' : 'text-slate-200'}`} />
                       ))}
                     </div>
                   </div>
-                )}
-                
-                <div className="mt-10 pt-8 border-t border-slate-100">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Complexity</p>
-                  <div className="flex items-center gap-1.5">
-                    {[1,2,3,4,5].map(i => (
-                      <Zap key={i} className={`w-5 h-5 ${i <= selectedConcept.difficulty ? 'text-amber-500 fill-amber-500' : 'text-slate-200'}`} />
-                    ))}
-                  </div>
                 </div>
-              </div>
 
-              {/* Sticky Footer */}
-              <div className="p-8 sm:p-10 py-6 border-t border-slate-100 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-6 bg-slate-50/50">
-                <p className="text-sm text-slate-500 font-medium text-center sm:text-left">
-                  Need a deeper understanding?
-                </p>
-                <Link 
-                  href={`/tutor/${docId}`}
-                  className="w-full sm:w-auto text-sm font-bold bg-[#1a1a1a] text-white shadow-soft px-8 py-4 rounded-full hover:bg-[#2a2a2a] transition-all text-center flex items-center justify-center gap-2"
-                >
-                  Ask AI Tutor <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </Link>
-              </div>
+                {/* Sticky Footer */}
+                <div className="p-8 sm:p-10 py-6 border-t border-slate-100 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-6 bg-slate-50/50">
+                  <p className="text-sm text-slate-500 font-medium text-center sm:text-left">
+                    Need a deeper understanding?
+                  </p>
+                  <Link 
+                    href={`/tutor/${docId}`}
+                    className="w-full sm:w-auto text-sm font-bold bg-[#1a1a1a] text-white shadow-soft px-8 py-4 rounded-full hover:bg-[#2a2a2a] transition-all text-center flex items-center justify-center gap-2"
+                  >
+                    Ask AI Tutor <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                  </Link>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </motion.div>
   );
 }
