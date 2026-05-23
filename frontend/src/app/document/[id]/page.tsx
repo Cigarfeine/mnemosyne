@@ -176,8 +176,8 @@ export default function DocumentPage() {
       className="flex flex-col h-[calc(100vh-14rem)] bg-white/60 backdrop-blur-md rounded-[32px] overflow-hidden border border-slate-200/60 shadow-soft"
     >
       {/* Header */}
-      <div className="border-b border-slate-200/50 px-4 sm:px-8 py-4 sm:py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0 bg-white/40 relative z-10">
-        <div className="flex items-start md:items-center gap-3 sm:gap-6 w-full md:w-auto">
+      <div className="border-b border-slate-200/50 px-4 sm:px-8 py-4 sm:py-6 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 xl:gap-6 bg-white/40 relative z-10">
+        <div className="flex items-start md:items-center gap-3 sm:gap-6 w-full xl:flex-1 min-w-0">
           <Link href="/" className="p-2 sm:p-3 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50 text-slate-500 hover:text-slate-700 transition-colors mt-1 md:mt-0 flex-shrink-0">
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Link>
@@ -186,43 +186,43 @@ export default function DocumentPage() {
               {doc.title}
             </h1>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1.5 text-[10px] sm:text-xs font-medium text-slate-500">
-              <span className="bg-primary/10 text-primary px-2 sm:px-2.5 py-0.5 rounded-full border border-primary/20">{doc.subject}</span>
-              <span className="flex items-center gap-1"><FileText className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> {doc.total_pages} pages</span>
-              <span className="flex items-center gap-1"><BrainCircuit className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> {doc.total_chunks} chunks</span>
+              <span className="bg-primary/10 text-primary px-2 sm:px-2.5 py-0.5 rounded-full border border-primary/20 flex-shrink-0">{doc.subject}</span>
+              <span className="flex items-center gap-1 flex-shrink-0"><FileText className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> {doc.total_pages} pages</span>
+              <span className="flex items-center gap-1 flex-shrink-0"><BrainCircuit className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> {doc.total_chunks} chunks</span>
               {concepts.length > 0 && (
-                <span className="flex items-center gap-1 text-emerald-600"><Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> {concepts.length} concepts</span>
+                <span className="flex items-center gap-1 text-emerald-600 flex-shrink-0"><Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> {concepts.length} concepts</span>
               )}
             </div>
           </div>
         </div>
         
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto mt-2 md:mt-0">
+        <div className="flex flex-wrap xl:flex-nowrap items-center justify-start xl:justify-end gap-2 sm:gap-3 w-full xl:w-auto mt-2 xl:mt-0 flex-shrink-0">
           {concepts.length === 0 && !extracting && (
             <button
               onClick={triggerExtraction}
               disabled={extracting}
-              className="flex flex-1 md:flex-none items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-primary hover:bg-[#f2663c] text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold transition-colors shadow-glow-primary disabled:opacity-50"
+              className="flex flex-1 xl:flex-none items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-primary hover:bg-[#f2663c] text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold transition-colors shadow-glow-primary disabled:opacity-50"
             >
               <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Extract Concepts</span><span className="sm:hidden">Extract</span>
             </button>
           )}
           
-          <Link href={`/study/${docId}?mode=notes`} className="flex flex-1 md:flex-none items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold transition-colors">
+          <Link href={`/study/${docId}?mode=notes`} className="flex flex-1 xl:flex-none items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold transition-colors">
             <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" /> Notes
           </Link>
-          <Link href={`/study/${docId}?mode=pyq`} className="flex flex-1 md:flex-none items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold transition-colors shadow-sm">
+          <Link href={`/study/${docId}?mode=pyq`} className="flex flex-1 xl:flex-none items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold transition-colors shadow-sm">
             <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> PYQ
           </Link>
           
-          <Link href={`/tutor/${docId}`} className="flex flex-1 md:flex-none items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-[#f8a8b8] hover:bg-[#f292a5] text-slate-900 shadow-sm px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold transition-colors">
+          <Link href={`/tutor/${docId}`} className="flex flex-1 xl:flex-none items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm bg-[#f8a8b8] hover:bg-[#f292a5] text-slate-900 shadow-sm px-3 sm:px-6 py-2 sm:py-3 rounded-full font-bold transition-colors">
             <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-900" /> Tutor
           </Link>
 
-          <div className="w-px h-8 bg-slate-200 mx-2 hidden md:block"></div>
+          <div className="w-px h-8 bg-slate-200 mx-2 hidden xl:block"></div>
 
           <button 
             onClick={handleDelete}
-            className="p-2 sm:p-2.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-500 border border-rose-100 transition-colors ml-auto md:ml-0"
+            className="p-2 sm:p-2.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-500 border border-rose-100 transition-colors ml-auto xl:ml-0 flex-shrink-0"
             title="Remove Document"
           >
             <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
