@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.models.database import get_db, Concept, MemoryRecord, Document
+from app.api.auth import get_user_id
 from app.services.memory_service import sm2_update, calculate_retention, get_review_priority
 from datetime import datetime, timedelta
 
@@ -14,10 +15,11 @@ class ReviewSubmission(BaseModel):
 
 
 @router.get("/due")
-def get_due_reviews(limit: int = 20, db: Session = Depends(get_db)):
+def get_due_reviews(limit: int = 20, db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
     now = datetime.utcnow()
 
     records = db.query(MemoryRecord).filter(
+        MemoryRecord.user_id == user_id,
         MemoryRecord.next_review <= now + timedelta(hours=1)
     ).all()
 
@@ -56,12 +58,13 @@ def get_due_reviews(limit: int = 20, db: Session = Depends(get_db)):
 
 
 @router.post("/review")
-def submit_review(submission: ReviewSubmission, db: Session = Depends(get_db)):
+def submit_review(submission: ReviewSubmission, db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
     if submission.quality < 0 or submission.quality > 5:
         raise HTTPException(status_code=400, detail="Quality must be 0-5")
 
     record = db.query(MemoryRecord).filter(
-        MemoryRecord.concept_id == submission.concept_id
+        MemoryRecord.concept_id == submission.concept_id,
+        MemoryRecord.user_id == user_id
     ).first()
 
     if not record:
@@ -98,8 +101,8 @@ def submit_review(submission: ReviewSubmission, db: Session = Depends(get_db)):
 
 
 @router.get("/stats")
-def get_memory_stats(db: Session = Depends(get_db)):
-    records = db.query(MemoryRecord).all()
+def get_memory_stats(db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
+    records = db.query(MemoryRecord).filter(MemoryRecord.user_id == user_id).all()
     if not records:
         return {
             "total_concepts": 0,
@@ -131,8 +134,9 @@ def get_memory_stats(db: Session = Depends(get_db)):
 
 
 @router.get("/weak-concepts")
-def get_weak_concepts(threshold: float = 0.5, db: Session = Depends(get_db)):
+def get_weak_concepts(threshold: float = 0.5, db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
     records = db.query(MemoryRecord).filter(
+        MemoryRecord.user_id == user_id,
         MemoryRecord.retention_score < threshold
     ).all()
 

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.models.database import get_db, Concept, ReviewItem, Document
+from app.api.auth import get_user_id
 from app.services.ai_service import generate_questions_for_concept
 
 router = APIRouter()
@@ -11,8 +12,13 @@ async def generate_questions_for_document(
     document_id: str,
     background_tasks: BackgroundTasks,
     study_mode: str = "notes",
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_user_id)
 ):
+    doc = db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+        
     concepts = db.query(Concept).filter(Concept.document_id == document_id).all()
     if not concepts:
         raise HTTPException(status_code=400, detail="No concepts found. Extract concepts first.")
@@ -69,7 +75,12 @@ def run_question_generation(concept_ids: list, study_mode: str = "notes"):
 
 
 @router.get("/questions/{concept_id}")
-def get_questions(concept_id: str, db: Session = Depends(get_db)):
+def get_questions(concept_id: str, db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
+    # Verify ownership
+    concept = db.query(Concept).join(Document).filter(Concept.id == concept_id, Document.user_id == user_id).first()
+    if not concept:
+        raise HTTPException(status_code=404, detail="Concept not found or unauthorized")
+        
     questions = db.query(ReviewItem).filter(ReviewItem.concept_id == concept_id).all()
     return [
         {
@@ -86,9 +97,13 @@ def get_questions(concept_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/session/{document_id}")
-def get_study_session(document_id: str, study_mode: str = "notes", limit: int = 10, db: Session = Depends(get_db)):
+def get_study_session(document_id: str, study_mode: str = "notes", limit: int = 10, db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
     from app.models.database import MemoryRecord
     from datetime import datetime
+
+    doc = db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
 
     concepts = db.query(Concept).filter(Concept.document_id == document_id).all()
     if not concepts:

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.models.database import get_db, Document, DocumentChunk, Concept, MemoryRecord
+from app.api.auth import get_user_id
 from app.services.ai_service import extract_concepts_from_chunk
 import networkx as nx
 from datetime import datetime, timedelta
@@ -12,9 +13,10 @@ router = APIRouter()
 async def extract_concepts(
     document_id: str,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_user_id)
 ):
-    doc = db.query(Document).filter(Document.id == document_id).first()
+    doc = db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
     if doc.status != "ready":
@@ -24,12 +26,12 @@ async def extract_concepts(
     if existing > 0:
         return {"message": f"Concepts already extracted ({existing} concepts)", "count": existing}
 
-    background_tasks.add_task(run_concept_extraction, document_id)
+    background_tasks.add_task(run_concept_extraction, document_id, user_id)
 
     return {"message": "Concept extraction started", "document_id": document_id}
 
 
-def run_concept_extraction(document_id: str):
+def run_concept_extraction(document_id: str, user_id: str):
     from app.models.database import SessionLocal
     db = SessionLocal()
 
@@ -75,6 +77,7 @@ def run_concept_extraction(document_id: str):
 
                 memory = MemoryRecord(
                     concept_id=concept.id,
+                    user_id=user_id,
                     next_review=datetime.utcnow()
                 )
                 db.add(memory)
@@ -93,7 +96,10 @@ def run_concept_extraction(document_id: str):
 
 
 @router.get("/{document_id}")
-def list_concepts(document_id: str, db: Session = Depends(get_db)):
+def list_concepts(document_id: str, db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
+    doc = db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
     concepts = db.query(Concept).filter(Concept.document_id == document_id).all()
     return [
         {
@@ -110,7 +116,10 @@ def list_concepts(document_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/graph/{document_id}")
-def get_knowledge_graph(document_id: str, db: Session = Depends(get_db)):
+def get_knowledge_graph(document_id: str, db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
+    doc = db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
     concepts = db.query(Concept).filter(Concept.document_id == document_id).all()
     if not concepts:
         return {"nodes": [], "edges": []}

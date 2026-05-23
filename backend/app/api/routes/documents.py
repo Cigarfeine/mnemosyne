@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.models.database import get_db, Document, DocumentChunk
+from app.api.auth import get_user_id
 from app.services.pdf_service import extract_text_from_pdf, chunk_text, clean_text
 import shutil
 import os
@@ -17,7 +18,8 @@ async def upload_document(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     subject: str = "General",
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_user_id)
 ):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported")
@@ -27,7 +29,8 @@ async def upload_document(
         title=file.filename.replace(".pdf", ""),
         filename=file.filename,
         subject=subject,
-        status="processing"
+        status="processing",
+        user_id=user_id
     )
     db.add(doc)
     db.commit()
@@ -109,10 +112,11 @@ def process_document(document_id: str, file_path: str):
 async def reprocess_document(
     document_id: str,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_user_id)
 ):
     """Re-process a document (retry text extraction + chunking)."""
-    doc = db.query(Document).filter(Document.id == document_id).first()
+    doc = db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
     
@@ -132,8 +136,8 @@ async def reprocess_document(
 
 
 @router.get("/")
-def list_documents(db: Session = Depends(get_db)):
-    docs = db.query(Document).order_by(Document.created_at.desc()).all()
+def list_documents(db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
+    docs = db.query(Document).filter(Document.user_id == user_id).order_by(Document.created_at.desc()).all()
     return [
         {
             "id": str(d.id),
@@ -149,8 +153,8 @@ def list_documents(db: Session = Depends(get_db)):
 
 
 @router.get("/{document_id}")
-def get_document(document_id: str, db: Session = Depends(get_db)):
-    doc = db.query(Document).filter(Document.id == document_id).first()
+def get_document(document_id: str, db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
+    doc = db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
 
@@ -171,8 +175,8 @@ def get_document(document_id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/{document_id}")
-def delete_document(document_id: str, db: Session = Depends(get_db)):
-    doc = db.query(Document).filter(Document.id == document_id).first()
+def delete_document(document_id: str, db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
+    doc = db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
     

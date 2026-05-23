@@ -4,6 +4,18 @@ const API = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000",
 });
 
+API.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    let deviceId = localStorage.getItem("mnemosyne_device_id");
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem("mnemosyne_device_id", deviceId);
+    }
+    config.headers["X-User-ID"] = deviceId;
+  }
+  return config;
+});
+
 export const documentsAPI = {
   upload: (file: File, subject: string) => {
     const form = new FormData();

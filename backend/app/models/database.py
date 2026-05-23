@@ -38,6 +38,7 @@ class Document(Base):
     __tablename__ = "documents"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(200), default="default", index=True)
     title = Column(String(500), nullable=False)
     filename = Column(String(500), nullable=False)
     subject = Column(String(200))
@@ -138,6 +139,7 @@ class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String(200), default="default", index=True)
     session_id = Column(String(200))
     document_id = Column(String(36), ForeignKey("documents.id"), nullable=True)
     role = Column(String(20), nullable=False)
