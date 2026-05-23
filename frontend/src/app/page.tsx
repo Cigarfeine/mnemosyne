@@ -42,6 +42,12 @@ export default function HomePage() {
     onDrop: async (files) => {
       if (files.length === 0) return;
       
+      const groqKey = localStorage.getItem("mnemosyne_groq_key");
+      if (!groqKey) {
+        window.dispatchEvent(new CustomEvent('open-api-modal'));
+        return;
+      }
+
       const validFiles = files.filter(f => f.name.toLowerCase().endsWith(".pdf"));
       if (validFiles.length === 0) {
         setError("Only PDF files are supported");

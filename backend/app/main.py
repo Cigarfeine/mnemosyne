@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import documents, concepts, memory, recall, tutor
 from app.models.database import Base, engine
@@ -35,10 +35,10 @@ def health():
     return {"status": "ok"}
 
 @app.get("/api/ai/health")
-def ai_health():
+def ai_health(x_groq_api_key: str = Header(default=None)):
     """Check AI provider status — used by frontend health indicator."""
     from app.services.ai_service import get_ai_health
-    return get_ai_health()
+    return get_ai_health(x_groq_api_key)
 
 @app.get("/api/extraction/progress/{document_id}")
 def extraction_progress(document_id: str):

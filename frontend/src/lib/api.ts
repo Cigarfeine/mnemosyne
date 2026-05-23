@@ -12,6 +12,11 @@ API.interceptors.request.use((config) => {
       localStorage.setItem("mnemosyne_device_id", deviceId);
     }
     config.headers["X-User-ID"] = deviceId;
+
+    const groqKey = localStorage.getItem("mnemosyne_groq_key");
+    if (groqKey) {
+      config.headers["X-Groq-Api-Key"] = groqKey;
+    }
   }
   return config;
 });

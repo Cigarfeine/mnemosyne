@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Header
 from sqlalchemy.orm import Session
 from app.models.database import get_db, Document, DocumentChunk, Concept, MemoryRecord
 from app.api.auth import get_user_id
@@ -14,8 +14,12 @@ async def extract_concepts(
     document_id: str,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    user_id: str = Depends(get_user_id)
+    user_id: str = Depends(get_user_id),
+    x_groq_api_key: str = Header(default=None)
 ):
+    if not x_groq_api_key:
+        raise HTTPException(status_code=401, detail="X-Groq-Api-Key header missing")
+
     doc = db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
@@ -26,12 +30,12 @@ async def extract_concepts(
     if existing > 0:
         return {"message": f"Concepts already extracted ({existing} concepts)", "count": existing}
 
-    background_tasks.add_task(run_concept_extraction, document_id, user_id)
+    background_tasks.add_task(run_concept_extraction, document_id, user_id, x_groq_api_key)
 
     return {"message": "Concept extraction started", "document_id": document_id}
 
 
-def run_concept_extraction(document_id: str, user_id: str):
+def run_concept_extraction(document_id: str, user_id: str, api_key: str):
     from app.models.database import SessionLocal
     db = SessionLocal()
 
@@ -52,7 +56,7 @@ def run_concept_extraction(document_id: str, user_id: str):
         for chunk in chunks:
             chunk_concepts = []
             try:
-                concepts = extract_concepts_from_chunk(chunk.content)
+                concepts = extract_concepts_from_chunk(api_key, chunk.content)
                 for c in concepts:
                     name = c.get("name", "").strip()
                     if name and name.lower() not in seen_concept_names:

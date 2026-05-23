@@ -7,13 +7,7 @@ from dotenv import load_dotenv
 load_dotenv(".env")
 
 # --- Groq Setup ---
-groq_client = None
-try:
-    from groq import Groq
-    groq_client = Groq(api_key=os.getenv("GROQ_API_KEY", ""))
-except Exception:
-    pass
-
+from groq import Groq
 GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it"]
 
 
@@ -158,8 +152,12 @@ Document context: {context}"""
 # API CALL HELPERS
 # =============================================================================
 
-def _call_groq(prompt: str, system_prompt: str = None, history: list = None, max_tokens: int = 4096) -> str:
+def _call_groq(api_key: str, prompt: str, system_prompt: str = None, history: list = None, max_tokens: int = 4096) -> str:
     """Call Groq API with retry and model fallback."""
+    if not api_key:
+        raise Exception("API key is missing.")
+    
+    groq_client = Groq(api_key=api_key)
     messages = []
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})
@@ -197,10 +195,10 @@ def _call_groq(prompt: str, system_prompt: str = None, history: list = None, max
     raise Exception(f"All Groq models failed. Last error: {last_error}")
 
 
-def _call_ai(prompt: str, system_prompt: str = None, history: list = None, max_tokens: int = 4096) -> str:
-    if groq_client:
-        return _call_groq(prompt, system_prompt, history, max_tokens)
-    raise Exception("Groq client is not configured. Check GROQ_API_KEY in .env")
+def _call_ai(api_key: str, prompt: str, system_prompt: str = None, history: list = None, max_tokens: int = 4096) -> str:
+    if not api_key:
+        raise Exception("401 Unauthorized: Groq API Key is missing. Please provide a valid key.")
+    return _call_groq(api_key, prompt, system_prompt, history, max_tokens)
 
 
 def _parse_json(text: str):
@@ -221,15 +219,21 @@ def _parse_json(text: str):
     return json.loads(cleaned)
 
 
-def get_ai_health() -> dict:
+def get_ai_health(api_key: str = None) -> dict:
     result = {
         "provider": "groq",
         "status": "unknown",
         "model": GROQ_MODELS[0],
         "message": "",
     }
+    
+    if not api_key:
+        result["status"] = "invalid_key"
+        result["message"] = "API key is missing."
+        return result
+
     try:
-        response = _call_ai("Reply with exactly: OK", max_tokens=10)
+        response = _call_ai(api_key, "Reply with exactly: OK", max_tokens=10)
         result["status"] = "healthy"
         result["message"] = "AI service is operational"
     except Exception as e:
@@ -250,10 +254,10 @@ def get_ai_health() -> dict:
 # PUBLIC API FUNCTIONS
 # =============================================================================
 
-def extract_concepts_from_chunk(text: str) -> list:
+def extract_concepts_from_chunk(api_key: str, text: str) -> list:
     try:
         prompt = CONCEPT_EXTRACTION_PROMPT.replace("{text}", text[:4000])
-        response_text = _call_ai(prompt, max_tokens=4096)
+        response_text = _call_ai(api_key, prompt, max_tokens=4096)
         data = _parse_json(response_text)
         return data.get("concepts", [])
     except Exception as e:
@@ -261,7 +265,7 @@ def extract_concepts_from_chunk(text: str) -> list:
         return []
 
 
-def generate_questions_for_concept(concept_name: str, definition: str, difficulty: int, num_questions: int = 3, study_mode: str = "notes") -> list:
+def generate_questions_for_concept(api_key: str, concept_name: str, definition: str, difficulty: int, num_questions: int = 3, study_mode: str = "notes") -> list:
     try:
         if study_mode == "pyq":
             prompt = PYQ_QUESTION_PROMPT.replace("{concept_name}", concept_name)
@@ -272,7 +276,7 @@ def generate_questions_for_concept(concept_name: str, definition: str, difficult
         prompt = prompt.replace("{difficulty}", str(difficulty))
         prompt = prompt.replace("{num_questions}", str(num_questions))
 
-        response_text = _call_ai(prompt, max_tokens=2048)
+        response_text = _call_ai(api_key, prompt, max_tokens=2048)
         return _parse_json(response_text)
     except Exception as e:
         print(f"AI SERVICE ERROR (question generation): {e}\n{traceback.format_exc()}")
@@ -288,7 +292,7 @@ def generate_questions_for_concept(concept_name: str, definition: str, difficult
         ]
 
 
-def chat_with_tutor(message: str, context: str, weak_concepts: list, history: list, study_mode: str = "notes") -> str:
+def chat_with_tutor(api_key: str, message: str, context: str, weak_concepts: list, history: list, study_mode: str = "notes") -> str:
     try:
         if study_mode == "pyq":
             system = PYQ_TUTOR_PROMPT
@@ -299,7 +303,7 @@ def chat_with_tutor(message: str, context: str, weak_concepts: list, history: li
             "{weak_concepts}", ", ".join(weak_concepts) if weak_concepts else "None identified yet"
         ).replace("{context}", context[:3000] if context else "No specific document context provided")
 
-        response_text = _call_ai(message, system_prompt=system, history=history, max_tokens=1024)
+        response_text = _call_ai(api_key, message, system_prompt=system, history=history, max_tokens=1024)
         return response_text
     except Exception as e:
         print(f"AI SERVICE ERROR (tutor chat): {e}\n{traceback.format_exc()}")

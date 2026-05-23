@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Header
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
@@ -19,7 +19,15 @@ class ChatRequest(BaseModel):
 
 
 @router.post("/chat")
-def tutor_chat(request: ChatRequest, db: Session = Depends(get_db), user_id: str = Depends(get_user_id)):
+def tutor_chat(
+    request: ChatRequest, 
+    db: Session = Depends(get_db), 
+    user_id: str = Depends(get_user_id),
+    x_groq_api_key: str = Header(default=None)
+):
+    if not x_groq_api_key:
+        raise HTTPException(status_code=401, detail="X-Groq-Api-Key header missing")
+
     session_id = request.session_id or str(uuid.uuid4())
 
     context = ""
@@ -42,7 +50,7 @@ def tutor_chat(request: ChatRequest, db: Session = Depends(get_db), user_id: str
 
     history_messages = [{"role": h.role, "content": h.content} for h in history]
 
-    response = chat_with_tutor(request.message, context, weak_concepts, history_messages, study_mode=request.study_mode)
+    response = chat_with_tutor(x_groq_api_key, request.message, context, weak_concepts, history_messages, study_mode=request.study_mode)
 
     user_msg = ChatMessage(
         session_id=session_id,

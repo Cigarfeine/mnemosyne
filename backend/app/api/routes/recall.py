@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Header
 from sqlalchemy.orm import Session
 from app.models.database import get_db, Concept, ReviewItem, Document
 from app.api.auth import get_user_id
@@ -13,8 +13,12 @@ async def generate_questions_for_document(
     background_tasks: BackgroundTasks,
     study_mode: str = "notes",
     db: Session = Depends(get_db),
-    user_id: str = Depends(get_user_id)
+    user_id: str = Depends(get_user_id),
+    x_groq_api_key: str = Header(default=None)
 ):
+    if not x_groq_api_key:
+        raise HTTPException(status_code=401, detail="X-Groq-Api-Key header missing")
+
     doc = db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
@@ -29,11 +33,11 @@ async def generate_questions_for_document(
     if existing > 0:
         return {"message": f"Questions already generated ({existing} questions)"}
 
-    background_tasks.add_task(run_question_generation, [str(c.id) for c in concepts], study_mode)
+    background_tasks.add_task(run_question_generation, [str(c.id) for c in concepts], study_mode, x_groq_api_key)
     return {"message": f"Generating questions for {len(concepts)} concepts"}
 
 
-def run_question_generation(concept_ids: list, study_mode: str = "notes"):
+def run_question_generation(concept_ids: list, study_mode: str = "notes", api_key: str = ""):
     from app.models.database import SessionLocal, Concept, ReviewItem
     db = SessionLocal()
 
@@ -45,6 +49,7 @@ def run_question_generation(concept_ids: list, study_mode: str = "notes"):
 
             try:
                 questions = generate_questions_for_concept(
+                    api_key,
                     concept.name,
                     concept.definition or "No definition available",
                     concept.difficulty,

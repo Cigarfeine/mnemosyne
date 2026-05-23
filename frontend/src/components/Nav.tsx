@@ -4,7 +4,8 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { aiAPI } from "@/lib/api";
-import { Wifi, WifiOff, AlertTriangle, Cpu, ArrowRight, Sparkles } from "lucide-react";
+import { Wifi, WifiOff, AlertTriangle, Cpu, ArrowRight, Sparkles, Settings } from "lucide-react";
+import ApiKeyModal from "./ApiKeyModal";
 
 const navLinks = [
   { href: "/", label: "Documents" },
@@ -12,7 +13,7 @@ const navLinks = [
   { href: "/contact", label: "Talk to us" },
 ];
 
-type AIStatus = "healthy" | "rate_limited" | "invalid_key" | "error" | "checking";
+type AIStatus = "healthy" | "rate_limited" | "invalid_key" | "error" | "checking" | "missing_key";
 
 export default function Nav() {
   const path = usePathname();
@@ -21,43 +22,69 @@ export default function Nav() {
   const [aiProvider, setAiProvider] = useState("");
   const [aiMessage, setAiMessage] = useState("");
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
 
   const checkHealth = async () => {
+    const localKey = localStorage.getItem("mnemosyne_groq_key");
+    if (!localKey) {
+      setAiStatus("missing_key");
+      setAiMessage("Please setup your API Key");
+      return;
+    }
+
     try {
       const res = await aiAPI.health();
       setAiStatus(res.data.status as AIStatus);
       setAiProvider(res.data.provider);
       setAiMessage(res.data.message);
-    } catch {
-      setAiStatus("error");
-      setAiMessage("Backend not reachable");
+    } catch (e: any) {
+      if (e.response?.status === 401) {
+        setAiStatus("invalid_key");
+        setAiMessage("Invalid API Key");
+      } else {
+        setAiStatus("error");
+        setAiMessage("Backend not reachable");
+      }
     }
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     checkHealth();
     const interval = setInterval(checkHealth, 30000); // Check every 30s
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const handleOpenModal = () => setIsApiKeyModalOpen(true);
+    window.addEventListener('open-api-modal', handleOpenModal);
+    return () => window.removeEventListener('open-api-modal', handleOpenModal);
+  }, []);
+
   const statusConfig = {
-    checking: { color: "text-slate-400", bg: "bg-slate-500", pulse: true, icon: Cpu },
-    healthy: { color: "text-emerald-400", bg: "bg-emerald-500", pulse: false, icon: Wifi },
-    rate_limited: { color: "text-amber-400", bg: "bg-amber-500", pulse: true, icon: AlertTriangle },
-    invalid_key: { color: "text-rose-400", bg: "bg-rose-500", pulse: false, icon: WifiOff },
-    error: { color: "text-rose-400", bg: "bg-rose-500", pulse: false, icon: WifiOff },
+    checking: { color: "text-slate-400", bg: "bg-slate-500", pulse: true, icon: Cpu, label: "Checking..." },
+    healthy: { color: "text-emerald-400", bg: "bg-emerald-500", pulse: false, icon: Wifi, label: "Groq AI" },
+    rate_limited: { color: "text-amber-400", bg: "bg-amber-500", pulse: true, icon: AlertTriangle, label: "Rate Limited" },
+    invalid_key: { color: "text-rose-400", bg: "bg-rose-500", pulse: false, icon: WifiOff, label: "Invalid Key" },
+    error: { color: "text-rose-400", bg: "bg-rose-500", pulse: false, icon: WifiOff, label: "Offline" },
+    missing_key: { color: "text-[#DF5830]", bg: "bg-[#DF5830]", pulse: true, icon: Settings, label: "Setup AI" },
   };
 
-  const config = statusConfig[aiStatus];
+  const config = statusConfig[aiStatus] || statusConfig.checking;
   const StatusIcon = config.icon;
 
   return (
     <>
+      <ApiKeyModal 
+        isOpen={isApiKeyModalOpen} 
+        onClose={() => setIsApiKeyModalOpen(false)} 
+        onSave={() => checkHealth()} 
+      />
+
       <motion.nav className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 w-[95%] sm:w-[90%] max-w-5xl z-50 rounded-[24px] sm:rounded-full bg-gradient-to-b from-white/80 to-white/50 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.15),_0_1px_3px_rgba(255,255,255,0.8)_inset,_0_0_0_1px_rgba(255,255,255,0.3)_inset] px-3 sm:px-6 py-2.5 sm:py-4 flex items-center justify-between border border-white/40">
         <Link href="/" className="font-serif italic font-medium tracking-tight text-lg sm:text-2xl text-[#1a1a1a] ml-1 sm:ml-2 hover:opacity-70 transition-opacity">
           Mnemosyne
         </Link>
+
         <div className="flex items-center gap-1 sm:gap-3">
           <div 
             className="flex gap-1 sm:gap-2 mr-1 sm:mr-6 relative"
@@ -108,15 +135,15 @@ export default function Nav() {
 
           <div className="relative ml-2">
             <button
-              onClick={() => setShowTooltip(!showTooltip)}
+              onClick={() => setIsApiKeyModalOpen(true)}
               onMouseEnter={() => setShowTooltip(true)}
               onMouseLeave={() => setShowTooltip(false)}
               aria-label="AI Status"
-              className={`flex items-center gap-1.5 sm:gap-3 px-2 sm:px-5 py-1.5 sm:py-2.5 rounded-full border border-slate-200/80 transition-all shadow-sm bg-white/60 backdrop-blur-md hover:bg-white/90 hover:shadow-md ${aiStatus === "rate_limited" ? "animate-pulse" : ""}`}
+              className={`flex items-center gap-1.5 sm:gap-3 px-2 sm:px-5 py-1.5 sm:py-2.5 rounded-full border border-slate-200/80 transition-all shadow-sm bg-white/60 backdrop-blur-md hover:bg-white/90 hover:shadow-md ${aiStatus === "rate_limited" || aiStatus === "missing_key" ? "animate-pulse" : ""}`}
             >
               <StatusIcon className={`w-3.5 h-3.5 hidden sm:block ${config.color}`} />
               <span className={`text-xs font-medium ${config.color} hidden sm:inline`}>
-                Groq AI
+                {config.label}
               </span>
               <div className={`w-2 h-2 rounded-full ${config.bg} ${config.pulse ? "animate-pulse" : ""}`} />
             </button>
@@ -134,10 +161,13 @@ export default function Nav() {
                     <span className="text-sm font-semibold text-slate-800 capitalize">{aiStatus.replace("_", " ")}</span>
                   </div>
                   <p className="text-xs text-slate-500 leading-relaxed">{aiMessage || "Checking..."}</p>
-                  {(aiStatus === "invalid_key" || aiStatus === "error") && (
-                    <p className="text-xs text-amber-600 mt-2 pt-2 border-t border-slate-100">
-                      💡 Add your API key to backend/.env
-                    </p>
+                  {(aiStatus === "invalid_key" || aiStatus === "error" || aiStatus === "missing_key") && (
+                    <button 
+                      onClick={() => { setShowTooltip(false); setIsApiKeyModalOpen(true); }}
+                      className="text-xs text-[#DF5830] mt-3 pt-3 border-t border-slate-100 hover:underline flex items-center gap-1 w-full text-left font-bold"
+                    >
+                      💡 Click here to Setup AI
+                    </button>
                   )}
                 </motion.div>
               )}
@@ -165,7 +195,7 @@ export default function Nav() {
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {(aiStatus === "invalid_key" || aiStatus === "error") && (
+        {(aiStatus === "error") && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
