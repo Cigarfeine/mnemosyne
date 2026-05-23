@@ -52,29 +52,31 @@ export default function TutorPage() {
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/40 border-b border-slate-200/50 px-8 py-6 flex items-center gap-6"
+        className="bg-white/40 border-b border-slate-200/50 px-4 py-4 sm:px-8 sm:py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6"
       >
-        <Link href={`/document/${docId}`} className="p-3 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50 text-slate-500 hover:text-slate-700 transition-colors">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <div className="flex items-center gap-3 ml-2">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-            <BrainCircuit className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <p className="font-bold text-slate-900">
-              <ShinyText text="AI Tutor" disabled={false} speed={2} color="#DF5830" shineColor="#f2663c" className="inline-block" />
-            </p>
-            <p className="text-xs text-slate-500 flex items-center gap-1 font-medium">
-              <Sparkles className="w-3 h-3 text-primary" />
-              Context-aware · Knows your weak areas
-            </p>
+        <div className="flex items-center gap-3 sm:gap-6">
+          <Link href={`/document/${docId}`} className="p-2.5 sm:p-3 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50 text-slate-500 hover:text-slate-700 transition-colors shrink-0">
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          </Link>
+          <div className="flex items-center gap-3 ml-1 sm:ml-2">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
+              <BrainCircuit className="w-5 h-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-bold text-slate-900 text-lg sm:text-base leading-tight">
+                <ShinyText text="AI Tutor" disabled={false} speed={2} color="#DF5830" shineColor="#f2663c" className="inline-block" />
+              </p>
+              <p className="text-[10px] sm:text-xs text-slate-500 flex items-start sm:items-center gap-1 font-medium mt-0.5 sm:mt-0 leading-tight">
+                <Sparkles className="w-3 h-3 text-primary shrink-0 mt-0.5 sm:mt-0" />
+                <span>Context-aware · Knows your weak areas</span>
+              </p>
+            </div>
           </div>
         </div>
-        <div className="ml-auto flex items-center gap-1 bg-slate-50 p-1 rounded-full border border-slate-200">
+        <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-full border border-slate-200 w-full sm:w-auto shrink-0 justify-center sm:justify-start">
           <button
             onClick={() => setStudyMode("notes")}
-            className={`text-xs font-bold px-4 py-1.5 rounded-full transition-all ${
+            className={`flex-1 sm:flex-none text-center text-xs font-bold px-4 py-2 sm:py-1.5 rounded-full transition-all ${
               studyMode === "notes" ? "bg-primary text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
             }`}
           >
@@ -82,7 +84,7 @@ export default function TutorPage() {
           </button>
           <button
             onClick={() => setStudyMode("pyq")}
-            className={`text-xs font-bold px-4 py-1.5 rounded-full transition-all ${
+            className={`flex-1 sm:flex-none text-center text-xs font-bold px-4 py-2 sm:py-1.5 rounded-full transition-all ${
               studyMode === "pyq" ? "bg-amber-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
             }`}
           >

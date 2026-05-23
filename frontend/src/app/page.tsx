@@ -252,12 +252,12 @@ export default function HomePage() {
                 >
                   <Link href={`/document/${doc.id}`}>
                     <div className="bg-white/60 backdrop-blur-md rounded-[20px] sm:rounded-[24px] p-5 sm:p-6 cursor-pointer border border-slate-200/80 shadow-sm hover:bg-white/90 hover:shadow-md transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between group gap-4 sm:gap-0">
-                      <div className="flex items-start sm:items-center gap-4 sm:gap-5 relative z-10 flex-1 min-w-0">
+                      <div className="flex items-start sm:items-center gap-4 sm:gap-5 relative z-10 flex-1 min-w-0 w-full">
                         <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white border border-slate-200 flex items-center justify-center group-hover:scale-105 transition-transform flex-shrink-0 shadow-sm">
                           <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-slate-800" />
                         </div>
-                        <div className="min-w-0">
-                          <p className="font-serif italic font-medium text-2xl sm:text-3xl text-[#1a1a1a] truncate mb-1 pr-2">{doc.title}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-serif italic font-medium text-xl sm:text-3xl text-[#1a1a1a] line-clamp-2 sm:truncate mb-1.5 sm:mb-1 pr-2 leading-tight">{doc.title}</p>
                           <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-600 font-medium">
                             <span className="bg-white border border-slate-200 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">{doc.subject}</span>
                             <span>{doc.total_pages} pages</span>
@@ -267,17 +267,17 @@ export default function HomePage() {
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 relative z-10 w-full sm:w-auto mt-2 sm:mt-0 pt-4 sm:pt-0 border-t border-slate-100 sm:border-t-0">
-                        <div className={`flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border ${getStatusColor(doc.status)}`}>
+                      <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 relative z-10 w-full sm:w-auto mt-2 sm:mt-0 pt-4 sm:pt-0 border-t border-slate-100 sm:border-t-0 shrink-0">
+                        <div className={`flex items-center gap-1.5 sm:gap-2 text-xs px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border ${getStatusColor(doc.status)}`}>
                           {getStatusIcon(doc.status)}
                           <span className="font-semibold capitalize tracking-wider">{doc.status}</span>
                         </div>
                         <button 
                           onClick={(e) => handleDelete(e, doc.id)}
-                          className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                          className="p-2 sm:p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors bg-slate-50/50 sm:bg-transparent"
                           title="Delete Document"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                         </button>
                       </div>
                     </div>

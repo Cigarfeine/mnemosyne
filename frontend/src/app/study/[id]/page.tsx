@@ -317,21 +317,23 @@ function StudyPageContent() {
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-8 bg-white/60 backdrop-blur-md shadow-soft rounded-[32px] px-8 py-5 border border-slate-200/60"
+        className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mb-6 sm:mb-8 bg-white/60 backdrop-blur-md shadow-soft rounded-[24px] sm:rounded-[32px] px-4 sm:px-8 py-4 sm:py-5 border border-slate-200/60 gap-4 sm:gap-0"
       >
-        <Link href={`/document/${docId}`} className="text-sm font-bold text-slate-900 hover:text-[#1a1a1a] transition-colors flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
-          <ArrowLeft className="w-4 h-4" />
-          Exit
-        </Link>
-        <span className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${
-          studyMode === "pyq" 
-            ? "bg-amber-50 text-amber-600 border-amber-200" 
-            : "bg-primary/10 text-primary border-primary/20"
-        }`}>
-          {studyMode === "pyq" ? "PYQ Mode" : "Notes Mode"}
-        </span>
-        <div className="flex-1 mx-6">
-          <div className="flex justify-between text-xs text-slate-400 mb-2 font-medium">
+        <div className="flex items-center justify-between sm:justify-start gap-4">
+          <Link href={`/document/${docId}`} className="text-sm font-bold text-slate-900 hover:text-[#1a1a1a] transition-colors flex items-center gap-2 bg-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-slate-200 shadow-sm shrink-0">
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Exit</span>
+          </Link>
+          <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border shrink-0 ${
+            studyMode === "pyq" 
+              ? "bg-amber-50 text-amber-600 border-amber-200" 
+              : "bg-primary/10 text-primary border-primary/20"
+          }`}>
+            {studyMode === "pyq" ? "PYQ Mode" : "Notes Mode"}
+          </span>
+        </div>
+        <div className="flex-1 w-full sm:w-auto sm:mx-6">
+          <div className="flex justify-between text-[10px] sm:text-xs text-slate-400 mb-1.5 sm:mb-2 font-medium">
             <span>Progress</span>
             <span>{completedCards} of {totalCards}</span>
           </div>
