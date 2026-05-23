@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { aiAPI } from "@/lib/api";
-import { Wifi, WifiOff, AlertTriangle, Cpu, ArrowRight } from "lucide-react";
+import { Wifi, WifiOff, AlertTriangle, Cpu, ArrowRight, Sparkles } from "lucide-react";
 
 const navLinks = [
   { href: "/", label: "Documents" },
@@ -67,7 +67,9 @@ export default function Nav() {
                   className={`relative text-[10px] sm:text-sm font-bold px-2.5 py-1.5 sm:px-5 sm:py-2.5 rounded-full transition-colors flex items-center justify-center ${
                     isActive 
                       ? "text-white" 
-                      : "text-slate-500 hover:bg-slate-100/50 hover:text-[#1a1a1a]"
+                      : link.href === "/contact"
+                        ? "text-[#f8a8b8] bg-[#f8a8b8]/10 hover:bg-[#f8a8b8]/20"
+                        : "text-slate-500 hover:bg-slate-100/50 hover:text-[#1a1a1a]"
                   }`}
                 >
                   {isActive && (
@@ -77,7 +79,19 @@ export default function Nav() {
                       transition={{ type: "spring", stiffness: 400, damping: 35 }}
                     />
                   )}
-                  <span className="relative z-10">{link.label}</span>
+                  {link.href === "/contact" && !isActive && (
+                    <motion.div
+                      animate={{ 
+                        boxShadow: ["0px 0px 0px 0px rgba(248,168,184,0.4)", "0px 0px 0px 6px rgba(248,168,184,0)"]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+                      className="absolute inset-0 rounded-full"
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    {link.href === "/contact" && !isActive && <Sparkles className="w-3 h-3" />}
+                    {link.label}
+                  </span>
                 </Link>
               );
             })}
