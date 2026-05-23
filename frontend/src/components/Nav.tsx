@@ -104,7 +104,9 @@ export default function Nav() {
         {/* Links Container */}
         <div className="flex items-center justify-between sm:justify-center w-full sm:w-auto gap-1 sm:gap-2">
           {navLinks.map((link) => {
-            const isActive = path === link.href;
+            const isActive = link.href === "/"
+              ? path === "/" || path.startsWith("/document") || path.startsWith("/tutor") || path.startsWith("/study")
+              : path === link.href || path.startsWith(link.href + "/");
             const isHovered = hoveredPath === link.href;
             const hasPill = hoveredPath ? isHovered : isActive;
 

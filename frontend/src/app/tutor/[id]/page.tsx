@@ -37,9 +37,63 @@ export default function TutorPage() {
     setInput("");
     setMessages((m) => [...m, { role: "user", content: msg }]);
     setLoading(true);
+
     try {
-      const res = await tutorAPI.chat(msg, docId, sessionId, studyMode);
-      setMessages((m) => [...m, { role: "assistant", content: res.data.response }]);
+      const groqKey = localStorage.getItem("mnemosyne_groq_key");
+      let deviceId = localStorage.getItem("mnemosyne_device_id");
+      if (!deviceId) {
+        deviceId = crypto.randomUUID();
+        localStorage.setItem("mnemosyne_device_id", deviceId);
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/api/tutor/chat/stream`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-ID": deviceId,
+          "X-Groq-Api-Key": groqKey || ""
+        },
+        body: JSON.stringify({
+          message: msg,
+          document_id: docId,
+          session_id: sessionId,
+          study_mode: studyMode
+        })
+      });
+
+      if (!response.ok) throw new Error("Failed to chat");
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder("utf-8");
+
+      let rawText = "";
+      let isFirstChunk = true;
+
+      if (reader) {
+        setMessages((m) => [...m, { role: "assistant", content: "" }]);
+        
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          rawText += decoder.decode(value, { stream: true });
+          
+          const cleanedText = rawText.replace(/<think>[\s\S]*?(?:<\/think>|$)/g, '').trim();
+          
+          if (cleanedText !== "") {
+            if (isFirstChunk) {
+              setLoading(false);
+              isFirstChunk = false;
+            }
+            
+            setMessages((m) => {
+              const newM = [...m];
+              newM[newM.length - 1].content = cleanedText;
+              return newM;
+            });
+          }
+        }
+      }
     } catch (e) {
       setMessages((m) => [...m, { role: "assistant", content: "Sorry, I encountered an error. Please try again." }]);
     } finally {
@@ -73,23 +127,25 @@ export default function TutorPage() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-full border border-slate-200 w-full sm:w-auto shrink-0 justify-center sm:justify-start">
-          <button
-            onClick={() => setStudyMode("notes")}
-            className={`flex-1 sm:flex-none text-center text-xs font-bold px-4 py-2 sm:py-1.5 rounded-full transition-all ${
-              studyMode === "notes" ? "bg-primary text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            Notes
-          </button>
-          <button
-            onClick={() => setStudyMode("pyq")}
-            className={`flex-1 sm:flex-none text-center text-xs font-bold px-4 py-2 sm:py-1.5 rounded-full transition-all ${
-              studyMode === "pyq" ? "bg-amber-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            PYQ
-          </button>
+        <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-full border border-slate-200 w-full sm:w-auto shrink-0 relative">
+          {(["notes", "pyq"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setStudyMode(tab)}
+              className={`relative flex-1 sm:flex-none text-center text-xs font-bold px-6 py-2 sm:py-1.5 rounded-full transition-colors duration-300 z-10 ${
+                studyMode === tab ? "text-white" : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              {studyMode === tab && (
+                <motion.div
+                  layoutId="studyModeTab"
+                  className={`absolute inset-0 rounded-full shadow-sm -z-10 ${tab === "notes" ? "bg-primary" : "bg-amber-500"}`}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              {tab === "notes" ? "Notes" : "PYQ"}
+            </button>
+          ))}
         </div>
       </motion.div>
 
@@ -140,17 +196,32 @@ export default function TutorPage() {
         ))}
         {loading && (
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex justify-start items-end"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-start items-start"
           >
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 mr-3 flex-shrink-0">
-              <BrainCircuit className="w-4 h-4 text-primary animate-pulse" />
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20 mr-3 flex-shrink-0 mt-1 relative overflow-hidden">
+              <motion.div 
+                className="absolute inset-0 bg-primary/20"
+                animate={{ scale: [1, 1.5, 1], opacity: [0, 0.5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <BrainCircuit className="w-4 h-4 text-primary relative z-10" />
             </div>
-            <div className="bg-white/80 backdrop-blur-md rounded-[24px] rounded-bl-sm px-6 py-4 text-base text-slate-400 border border-slate-200/50 shadow-sm flex gap-1">
-              <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            <div className="bg-white/80 backdrop-blur-md rounded-[24px] rounded-bl-sm px-5 py-3.5 border border-slate-200/50 shadow-sm flex items-center gap-3 overflow-hidden relative">
+              <motion.div 
+                className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent"
+                animate={{ x: ['-100%', '100%'] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+              />
+              <div className="relative flex items-center justify-center w-4 h-4 shrink-0">
+                <motion.div 
+                  className="absolute inset-0 border-2 border-slate-200 border-t-primary rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                />
+              </div>
+              <ShinyText text="Deep reasoning in progress..." disabled={false} speed={2.5} color="#64748b" shineColor="#0f172a" className="text-sm font-medium tracking-wide" />
             </div>
           </motion.div>
         )}

@@ -7,7 +7,12 @@ from dotenv import load_dotenv
 load_dotenv(".env")
 
 from groq import Groq
-GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it"]
+GROQ_MODELS = [
+    "deepseek-r1-distill-llama-70b-specdec",
+    "deepseek-r1-distill-qwen-32b",
+    "llama-3.3-70b-versatile", 
+    "llama-3.1-8b-instant"
+]
 
 
 
@@ -196,7 +201,8 @@ def _call_ai(api_key: str, prompt: str, system_prompt: str = None, history: list
 
 def _parse_json(text: str):
     """Parse JSON from model response, stripping markdown fences if present."""
-    cleaned = text.strip()
+    import re
+    cleaned = re.sub(r'<think>.*?(?:</think>|$)', '', text, flags=re.DOTALL).strip()
     if cleaned.startswith("```"):
         lines = cleaned.split("\n")
         start = 0
@@ -293,8 +299,52 @@ def chat_with_tutor(api_key: str, message: str, context: str, weak_concepts: lis
             "{weak_concepts}", ", ".join(weak_concepts) if weak_concepts else "None identified yet"
         ).replace("{context}", context[:3000] if context else "No specific document context provided")
 
-        response_text = _call_ai(api_key, message, system_prompt=system, history=history, max_tokens=1024)
+        response_text = _call_ai(api_key, message, system_prompt=system, history=history, max_tokens=4096)
+        import re
+        response_text = re.sub(r'<think>.*?(?:</think>|$)', '', response_text, flags=re.DOTALL).strip()
         return response_text
     except Exception as e:
         print(f"AI SERVICE ERROR (tutor chat): {e}\n{traceback.format_exc()}")
         return "⚠️ AI is temporarily unavailable. Please try again in a minute. Error: " + str(e)[:100]
+
+def chat_with_tutor_stream(api_key: str, message: str, context: str, weak_concepts: list, history: list, study_mode: str = "notes"):
+    try:
+        if study_mode == "pyq":
+            system = PYQ_TUTOR_PROMPT
+        else:
+            system = NOTES_TUTOR_PROMPT
+
+        system = system.replace(
+            "{weak_concepts}", ", ".join(weak_concepts) if weak_concepts else "None identified yet"
+        ).replace("{context}", context[:3000] if context else "No specific document context provided")
+
+        messages = []
+        messages.append({"role": "system", "content": system})
+        messages.extend(history[-10:])
+        messages.append({"role": "user", "content": message})
+
+        client = Groq(api_key=api_key)
+        
+        last_error = None
+        for model in GROQ_MODELS:
+            try:
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    max_tokens=4096,
+                    temperature=0.7,
+                    stream=True
+                )
+                for chunk in response:
+                    if chunk.choices and chunk.choices[0].delta.content:
+                        yield chunk.choices[0].delta.content
+                return  # If successful, exit the generator
+            except Exception as e:
+                print(f"Model {model} failed in stream: {e}")
+                last_error = e
+                continue
+                
+        raise last_error
+    except Exception as e:
+        print(f"AI SERVICE ERROR (tutor stream): {e}\n{traceback.format_exc()}")
+        yield f"⚠️ Error: {str(e)[:100]}"
