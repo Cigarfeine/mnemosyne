@@ -318,7 +318,6 @@ export default function DocumentPage() {
       {/* Content */}
       <div className="flex-1 flex overflow-hidden relative">
         {activeTab === "graph" ? (
-          <>
             <div className="flex-1 relative z-0">
               {nodes.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-slate-500 relative z-10">
@@ -345,7 +344,6 @@ export default function DocumentPage() {
                 </div>
               )}
             </div>
-          </div>
         ) : (
           <div className="flex-1 overflow-y-auto p-8 pb-16 relative z-10 bg-transparent">
             {filteredConcepts.length === 0 && searchQuery ? (
@@ -399,49 +397,53 @@ export default function DocumentPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-2xl max-h-[90vh] rounded-[32px] border border-slate-200/60 bg-white/95 backdrop-blur-xl p-8 sm:p-10 overflow-y-auto shadow-2xl flex flex-col"
+              className="relative w-full max-w-3xl max-h-[90vh] rounded-[32px] border border-slate-200/60 bg-white/95 backdrop-blur-xl shadow-2xl flex flex-col overflow-hidden"
             >
-              <div className="flex items-start justify-between mb-8 gap-4">
-                <h3 className="text-4xl sm:text-5xl font-serif italic text-[#1a1a1a] leading-tight">{selectedConcept.name}</h3>
+              {/* Sticky Header */}
+              <div className="flex items-start justify-between p-8 sm:p-10 pb-6 shrink-0 border-b border-slate-100/50">
+                <h3 className="text-4xl sm:text-5xl font-serif italic text-[#1a1a1a] leading-tight pr-4">{selectedConcept.name}</h3>
                 <button onClick={() => setSelectedConcept(null)} className="p-2 -mr-2 -mt-2 rounded-full hover:bg-slate-100 text-slate-400 flex-shrink-0 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
               </div>
               
-              <div className="mb-8">
-                <span className="inline-block text-xs font-bold bg-[#f8a8b8]/15 text-[#e6758d] border border-[#f8a8b8]/30 px-3 py-1.5 rounded-lg uppercase tracking-wider">
-                  {selectedConcept.category}
-                </span>
-              </div>
-              
-              <div className="prose prose-slate max-w-none">
-                <p className="text-slate-600 leading-relaxed text-base sm:text-lg">{selectedConcept.definition}</p>
-              </div>
-              
-              {selectedConcept.prerequisites?.length > 0 && (
-                <div className="mt-10">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Prerequisites</p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedConcept.prerequisites.map((p: string) => (
-                      <span key={p} className="text-sm font-semibold border border-slate-200 bg-slate-50 text-slate-600 px-3 py-1.5 rounded-xl">
-                        {p}
-                      </span>
+              {/* Scrollable Content */}
+              <div className="p-8 sm:p-10 py-8 overflow-y-auto flex-1 custom-scrollbar">
+                <div className="mb-8">
+                  <span className="inline-block text-xs font-bold bg-[#f8a8b8]/15 text-[#e6758d] border border-[#f8a8b8]/30 px-3 py-1.5 rounded-lg uppercase tracking-wider">
+                    {selectedConcept.category}
+                  </span>
+                </div>
+                
+                <div className="prose prose-slate max-w-none">
+                  <p className="text-slate-600 leading-relaxed text-base sm:text-lg">{selectedConcept.definition}</p>
+                </div>
+                
+                {selectedConcept.prerequisites?.length > 0 && (
+                  <div className="mt-10">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Prerequisites</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedConcept.prerequisites.map((p: string) => (
+                        <span key={p} className="text-sm font-semibold border border-slate-200 bg-slate-50 text-slate-600 px-3 py-1.5 rounded-xl">
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="mt-10 pt-8 border-t border-slate-100">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Complexity</p>
+                  <div className="flex items-center gap-1.5">
+                    {[1,2,3,4,5].map(i => (
+                      <Zap key={i} className={`w-5 h-5 ${i <= selectedConcept.difficulty ? 'text-amber-500 fill-amber-500' : 'text-slate-200'}`} />
                     ))}
                   </div>
                 </div>
-              )}
-              
-              <div className="mt-10 pt-8 border-t border-slate-100">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Complexity</p>
-                <div className="flex items-center gap-1.5">
-                  {[1,2,3,4,5].map(i => (
-                    <Zap key={i} className={`w-5 h-5 ${i <= selectedConcept.difficulty ? 'text-amber-500 fill-amber-500' : 'text-slate-200'}`} />
-                  ))}
-                </div>
               </div>
 
-              {/* Quick actions for selected concept */}
-              <div className="mt-10 pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Sticky Footer */}
+              <div className="p-8 sm:p-10 py-6 border-t border-slate-100 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-6 bg-slate-50/50">
                 <p className="text-sm text-slate-500 font-medium text-center sm:text-left">
                   Need a deeper understanding?
                 </p>
