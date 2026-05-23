@@ -1,12 +1,11 @@
-from sqlalchemy import create_engine, Column, String, Text, Float, Integer, Boolean, DateTime, ForeignKey, JSON
+from sqlalchemy import create_engine, Column, String, Text, Float, Integer, Boolean, DateTime, ForeignKey, JSON, Uuid
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime
 import os
 from dotenv import load_dotenv
 
-load_dotenv("../.env")
+load_dotenv(".env")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/mnemosyne")
 
@@ -18,7 +17,11 @@ except ImportError:
     HAS_PGVECTOR = False
     Vector = lambda dim: Text  # fallback
 
-engine = create_engine(DATABASE_URL)
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False, "timeout": 15})
+else:
+    engine = create_engine(DATABASE_URL)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -34,7 +37,7 @@ def get_db():
 class Document(Base):
     __tablename__ = "documents"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     title = Column(String(500), nullable=False)
     filename = Column(String(500), nullable=False)
     subject = Column(String(200))
@@ -51,8 +54,8 @@ class Document(Base):
 class DocumentChunk(Base):
     __tablename__ = "document_chunks"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    document_id = Column(String(36), ForeignKey("documents.id"), nullable=False)
     chunk_index = Column(Integer, nullable=False)
     content = Column(Text, nullable=False)
     page_number = Column(Integer)
@@ -65,8 +68,8 @@ class DocumentChunk(Base):
 class Concept(Base):
     __tablename__ = "concepts"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    document_id = Column(String(36), ForeignKey("documents.id"), nullable=False)
     name = Column(String(500), nullable=False)
     definition = Column(Text)
     category = Column(String(200))
@@ -84,8 +87,8 @@ class Concept(Base):
 class MemoryRecord(Base):
     __tablename__ = "memory_records"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    concept_id = Column(UUID(as_uuid=True), ForeignKey("concepts.id"), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    concept_id = Column(String(36), ForeignKey("concepts.id"), nullable=False)
     user_id = Column(String(200), default="default")
     ease_factor = Column(Float, default=2.5)
     interval = Column(Integer, default=1)
@@ -105,8 +108,8 @@ class MemoryRecord(Base):
 class ReviewItem(Base):
     __tablename__ = "review_items"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    concept_id = Column(UUID(as_uuid=True), ForeignKey("concepts.id"), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    concept_id = Column(String(36), ForeignKey("concepts.id"), nullable=False)
     question = Column(Text, nullable=False)
     question_type = Column(String(50))
     options = Column(JSON)
@@ -121,8 +124,8 @@ class ReviewItem(Base):
 class StudySession(Base):
     __tablename__ = "study_sessions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id"))
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    document_id = Column(String(36), ForeignKey("documents.id"))
     user_id = Column(String(200), default="default")
     started_at = Column(DateTime, default=datetime.utcnow)
     ended_at = Column(DateTime)
@@ -134,9 +137,9 @@ class StudySession(Base):
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     session_id = Column(String(200))
-    document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id"), nullable=True)
+    document_id = Column(String(36), ForeignKey("documents.id"), nullable=True)
     role = Column(String(20), nullable=False)
     content = Column(Text, nullable=False)
     context_concepts = Column(JSON, default=list)

@@ -14,6 +14,7 @@ class ChatRequest(BaseModel):
     message: str
     document_id: Optional[str] = None
     session_id: Optional[str] = None
+    study_mode: str = "notes"
 
 
 @router.post("/chat")
@@ -35,7 +36,7 @@ def tutor_chat(request: ChatRequest, db: Session = Depends(get_db)):
 
     history_messages = [{"role": h.role, "content": h.content} for h in history]
 
-    response = chat_with_tutor(request.message, context, weak_concepts, history_messages)
+    response = chat_with_tutor(request.message, context, weak_concepts, history_messages, study_mode=request.study_mode)
 
     user_msg = ChatMessage(
         session_id=session_id,

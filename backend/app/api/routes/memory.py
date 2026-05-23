@@ -101,7 +101,15 @@ def submit_review(submission: ReviewSubmission, db: Session = Depends(get_db)):
 def get_memory_stats(db: Session = Depends(get_db)):
     records = db.query(MemoryRecord).all()
     if not records:
-        return {"total_concepts": 0}
+        return {
+            "total_concepts": 0,
+            "average_retention": 0,
+            "mastered_concepts": 0,
+            "weak_concepts": 0,
+            "due_for_review": 0,
+            "total_reviews": 0,
+            "overall_accuracy": 0
+        }
 
     total = len(records)
     avg_retention = sum(r.retention_score for r in records) / total

@@ -27,11 +27,34 @@ def retrieve_relevant_chunks(query: str, document_id: str, db: Session, top_k: i
 
             return [{"content": r[0], "chunk_index": r[1], "similarity": r[2]} for r in results]
 
-    # Fallback: return first N chunks
-    chunks = db.query(DocumentChunk).filter(
+    # Fallback: keyword matching
+    query_words = set(query.lower().split())
+    # Remove common stop words
+    stop_words = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+                  'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+                  'should', 'may', 'might', 'can', 'shall', 'to', 'of', 'in', 'for',
+                  'on', 'with', 'at', 'by', 'from', 'it', 'this', 'that', 'what',
+                  'which', 'who', 'how', 'when', 'where', 'why', 'and', 'or', 'not',
+                  'but', 'if', 'then', 'so', 'than', 'too', 'very', 'just', 'about',
+                  'me', 'my', 'i', 'you', 'your', 'we', 'our', 'they', 'their'}
+    query_keywords = query_words - stop_words
+
+    all_chunks = db.query(DocumentChunk).filter(
         DocumentChunk.document_id == document_id
-    ).order_by(DocumentChunk.chunk_index).limit(top_k).all()
-    return [{"content": c.content, "chunk_index": c.chunk_index, "similarity": 1.0} for c in chunks]
+    ).order_by(DocumentChunk.chunk_index).all()
+
+    if not query_keywords or not all_chunks:
+        return [{"content": c.content, "chunk_index": c.chunk_index, "similarity": 1.0} for c in all_chunks[:top_k]]
+
+    scored = []
+    for c in all_chunks:
+        chunk_words = set(c.content.lower().split())
+        overlap = len(query_keywords & chunk_words)
+        scored.append((c, overlap))
+
+    scored.sort(key=lambda x: x[1], reverse=True)
+    top = scored[:top_k]
+    return [{"content": c.content, "chunk_index": c.chunk_index, "similarity": score / max(len(query_keywords), 1)} for c, score in top]
 
 
 def get_weak_concept_names(document_id: str, db: Session, threshold: float = 0.5) -> list:

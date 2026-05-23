@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import documents, concepts, memory, recall, tutor
+from app.models.database import Base, engine
+
+# Create tables automatically on startup
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Mnemosyne API",
@@ -10,7 +14,12 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,3 +38,43 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/api/ai/health")
+def ai_health():
+    """Check AI provider status — used by frontend health indicator."""
+    from app.services.ai_service import get_ai_health
+    return get_ai_health()
+
+@app.get("/api/extraction/progress/{document_id}")
+def extraction_progress(document_id: str):
+    """Get extraction progress for a document."""
+    from sqlalchemy.orm import Session
+    from app.models.database import SessionLocal, Document, DocumentChunk, Concept
+    db = SessionLocal()
+    try:
+        doc = db.query(Document).filter(Document.id == document_id).first()
+        if not doc:
+            return {"status": "not_found"}
+        
+        total_chunks = doc.total_chunks or 0
+        concepts = db.query(Concept).filter(Concept.document_id == document_id).count()
+        
+        # Estimate: ~8 seconds per chunk for AI extraction
+        # Each chunk typically yields ~2 concepts, so we compare concepts to chunks×2
+        expected_concepts = total_chunks * 2
+        estimated_seconds = max(0, (total_chunks - min(concepts, total_chunks)) * 8)
+        progress = min(100, int((concepts / max(expected_concepts, 1)) * 100))
+        
+        # Status: done only when we have a meaningful number of concepts relative to chunks
+        is_done = concepts > 0 and (progress >= 90 or doc.status == "ready")
+        
+        return {
+            "status": "done" if is_done else "extracting",
+            "total_chunks": total_chunks,
+            "concepts_extracted": concepts,
+            "estimated_seconds_remaining": estimated_seconds,
+            "progress_percent": progress
+        }
+    finally:
+        db.close()
+

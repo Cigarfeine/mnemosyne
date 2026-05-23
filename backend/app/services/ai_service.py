@@ -1,12 +1,25 @@
-import anthropic
 import json
 import os
+import time
+import traceback
 from dotenv import load_dotenv
 
-load_dotenv("../.env")
+load_dotenv(".env")
 
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", "sk-ant-placeholder"))
+# --- Groq Setup ---
+groq_client = None
+try:
+    from groq import Groq
+    groq_client = Groq(api_key=os.getenv("GROQ_API_KEY", ""))
+except Exception:
+    pass
 
+GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it"]
+
+
+# =============================================================================
+# PROMPTS
+# =============================================================================
 
 CONCEPT_EXTRACTION_PROMPT = """You are an expert educator and knowledge architect. Analyze the following study material and extract the key concepts.
 
@@ -51,6 +64,8 @@ Generate a mix of:
 - open_recall (open-ended short answer)
 - fill_blank (fill in the blank)
 
+CRITICAL: Always format ALL mathematical expressions, equations, numbers, and variables using LaTeX syntax wrapped in $ for inline math (e.g., $2^7 = 128$) and $$ for block math. Never use raw plain text like 2^7 for math.
+
 Return ONLY a valid JSON array:
 [
   {{
@@ -66,7 +81,44 @@ Return ONLY a valid JSON array:
 Return ONLY the JSON array."""
 
 
-TUTOR_SYSTEM_PROMPT = """You are Mnemosyne, an intelligent AI tutor with deep awareness of how humans learn and forget.
+PYQ_QUESTION_PROMPT = """You are an expert exam coach who analyzes Previous Year Question (PYQ) patterns.
+
+Generate {num_questions} exam-style questions for the following concept, mimicking patterns commonly seen in university and competitive exams.
+
+Concept: {concept_name}
+Definition: {definition}
+Difficulty: {difficulty}/5
+
+Focus on:
+- Common exam traps and tricky variations
+- Numerical problems and calculation-based questions where applicable
+- Questions that test application, not just recall
+- Multi-step problems that combine multiple concepts
+- Common mistakes students make in exams
+
+Generate a mix of:
+- MCQ (multiple choice with 4 options, including common wrong answers students pick)
+- open_recall (short answer requiring precise technical language)
+- fill_blank (fill in the blank with key terms or values)
+
+CRITICAL: Always format ALL mathematical expressions, equations, numbers, and variables using LaTeX syntax wrapped in $ for inline math (e.g., $2^7 = 128$) and $$ for block math. Never use raw plain text like 2^7 for math.
+
+Return ONLY a valid JSON array:
+[
+  {{
+    "question": "In an exam, a student is asked...",
+    "question_type": "mcq",
+    "options": ["correct answer", "common wrong answer 1", "common wrong answer 2", "tricky distractor"],
+    "correct_answer": "correct answer",
+    "explanation": "Students often pick option B because... but the correct answer is A because...",
+    "difficulty": 3
+  }}
+]
+
+Return ONLY the JSON array."""
+
+
+NOTES_TUTOR_PROMPT = """You are Mnemosyne, an intelligent AI tutor with deep awareness of how humans learn and forget.
 
 You have access to the student's learning data:
 - Current weak concepts (low retention score)
@@ -80,69 +132,175 @@ Your tutoring style:
 - Gently probe understanding with questions
 - When a student seems confused, step back and build from prerequisites
 - Reference specific parts of their uploaded material when relevant
-
-You are not a search engine. You are a cognitive partner that understands their unique learning patterns.
+- CRITICAL: Always format ALL mathematical expressions, equations, numbers, and variables using LaTeX syntax wrapped in $ for inline math (e.g., $2^7 = 128$) and $$ for block math. Never use raw plain text like 2^7 for math.
 
 Student's weak concepts: {weak_concepts}
 Document context: {context}"""
 
 
+PYQ_TUTOR_PROMPT = """You are Mnemosyne, an expert exam preparation coach who specializes in Previous Year Question (PYQ) pattern analysis.
+
+Your coaching style:
+- Analyze question patterns from previous exams
+- Identify frequently tested topics and common question formats
+- Teach exam-specific strategies: elimination techniques, time management, mark allocation
+- Highlight common mistakes and traps in exam questions
+- Provide solving shortcuts and tricks where applicable
+- When explaining, frame everything in the context of "how this appears in exams"
+- Give model answers that would score full marks
+- CRITICAL: Always format ALL mathematical expressions, equations, numbers, and variables using LaTeX syntax wrapped in $ for inline math (e.g., $2^7 = 128$) and $$ for block math. Never use raw plain text like 2^7 for math.
+
+Student's weak concepts: {weak_concepts}
+Document context: {context}"""
+
+
+# =============================================================================
+# API CALL HELPERS
+# =============================================================================
+
+def _call_groq(prompt: str, system_prompt: str = None, history: list = None, max_tokens: int = 4096) -> str:
+    """Call Groq API with retry and model fallback."""
+    messages = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    if history:
+        messages.extend(history[-10:])
+    messages.append({"role": "user", "content": prompt})
+
+    last_error = None
+    for model in GROQ_MODELS:
+        for attempt in range(3):
+            try:
+                response = groq_client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    temperature=0.7,
+                )
+                return response.choices[0].message.content.strip()
+            except Exception as e:
+                last_error = e
+                error_str = str(e)
+                if "rate_limit" in error_str.lower() or "429" in error_str:
+                    wait = min(2 ** attempt * 3, 15)
+                    print(f"Groq rate limit on {model} (attempt {attempt+1}/3), waiting {wait}s...")
+                    time.sleep(wait)
+                    continue
+                elif "503" in error_str or "unavailable" in error_str.lower():
+                    wait = min(2 ** attempt * 2, 10)
+                    print(f"Groq {model} unavailable, waiting {wait}s...")
+                    time.sleep(wait)
+                    continue
+                else:
+                    print(f"Groq error with {model}: {e}")
+                    break
+    raise Exception(f"All Groq models failed. Last error: {last_error}")
+
+
+def _call_ai(prompt: str, system_prompt: str = None, history: list = None, max_tokens: int = 4096) -> str:
+    if groq_client:
+        return _call_groq(prompt, system_prompt, history, max_tokens)
+    raise Exception("Groq client is not configured. Check GROQ_API_KEY in .env")
+
+
+def _parse_json(text: str):
+    """Parse JSON from model response, stripping markdown fences if present."""
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        lines = cleaned.split("\n")
+        start = 0
+        end = len(lines)
+        for i, line in enumerate(lines):
+            if line.strip().startswith("```"):
+                if i == 0:
+                    start = i + 1
+                else:
+                    end = i
+                    break
+        cleaned = "\n".join(lines[start:end]).strip()
+    return json.loads(cleaned)
+
+
+def get_ai_health() -> dict:
+    result = {
+        "provider": "groq",
+        "status": "unknown",
+        "model": GROQ_MODELS[0],
+        "message": "",
+    }
+    try:
+        response = _call_ai("Reply with exactly: OK", max_tokens=10)
+        result["status"] = "healthy"
+        result["message"] = "AI service is operational"
+    except Exception as e:
+        error_str = str(e)
+        if "429" in error_str or "rate_limit" in error_str.lower():
+            result["status"] = "rate_limited"
+            result["message"] = "API quota temporarily exhausted. Will retry automatically."
+        elif "401" in error_str or "invalid" in error_str.lower() or "api_key" in error_str.lower():
+            result["status"] = "invalid_key"
+            result["message"] = "API key is invalid or missing. Check your .env file."
+        else:
+            result["status"] = "error"
+            result["message"] = str(e)[:200]
+    return result
+
+
+# =============================================================================
+# PUBLIC API FUNCTIONS
+# =============================================================================
+
 def extract_concepts_from_chunk(text: str) -> list:
-    prompt = CONCEPT_EXTRACTION_PROMPT.replace("{text}", text[:4000])
-
-    message = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=4096,
-        messages=[{"role": "user", "content": prompt}]
-    )
-
-    response_text = message.content[0].text.strip()
-
-    if response_text.startswith("```"):
-        response_text = response_text.split("```")[1]
-        if response_text.startswith("json"):
-            response_text = response_text[4:]
-        response_text = response_text.strip()
-
-    data = json.loads(response_text)
-    return data.get("concepts", [])
+    try:
+        prompt = CONCEPT_EXTRACTION_PROMPT.replace("{text}", text[:4000])
+        response_text = _call_ai(prompt, max_tokens=4096)
+        data = _parse_json(response_text)
+        return data.get("concepts", [])
+    except Exception as e:
+        print(f"AI SERVICE ERROR (concept extraction): {e}\n{traceback.format_exc()}")
+        return []
 
 
-def generate_questions_for_concept(concept_name: str, definition: str, difficulty: int, num_questions: int = 3) -> list:
-    prompt = QUESTION_GENERATION_PROMPT.replace("{concept_name}", concept_name)
-    prompt = prompt.replace("{definition}", definition)
-    prompt = prompt.replace("{difficulty}", str(difficulty))
-    prompt = prompt.replace("{num_questions}", str(num_questions))
+def generate_questions_for_concept(concept_name: str, definition: str, difficulty: int, num_questions: int = 3, study_mode: str = "notes") -> list:
+    try:
+        if study_mode == "pyq":
+            prompt = PYQ_QUESTION_PROMPT.replace("{concept_name}", concept_name)
+        else:
+            prompt = QUESTION_GENERATION_PROMPT.replace("{concept_name}", concept_name)
 
-    message = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=2048,
-        messages=[{"role": "user", "content": prompt}]
-    )
+        prompt = prompt.replace("{definition}", definition)
+        prompt = prompt.replace("{difficulty}", str(difficulty))
+        prompt = prompt.replace("{num_questions}", str(num_questions))
 
-    response_text = message.content[0].text.strip()
+        response_text = _call_ai(prompt, max_tokens=2048)
+        return _parse_json(response_text)
+    except Exception as e:
+        print(f"AI SERVICE ERROR (question generation): {e}\n{traceback.format_exc()}")
+        return [
+            {
+                "question": f"What is the main idea behind {concept_name}?",
+                "question_type": "open_recall",
+                "options": None,
+                "correct_answer": definition,
+                "explanation": "This is fundamental to understanding the concept.",
+                "difficulty": difficulty
+            },
+        ]
 
-    if response_text.startswith("```"):
-        response_text = response_text.split("```")[1]
-        if response_text.startswith("json"):
-            response_text = response_text[4:]
-        response_text = response_text.strip()
 
-    return json.loads(response_text)
+def chat_with_tutor(message: str, context: str, weak_concepts: list, history: list, study_mode: str = "notes") -> str:
+    try:
+        if study_mode == "pyq":
+            system = PYQ_TUTOR_PROMPT
+        else:
+            system = NOTES_TUTOR_PROMPT
 
+        system = system.replace(
+            "{weak_concepts}", ", ".join(weak_concepts) if weak_concepts else "None identified yet"
+        ).replace("{context}", context[:3000] if context else "No specific document context provided")
 
-def chat_with_tutor(message: str, context: str, weak_concepts: list, history: list) -> str:
-    system = TUTOR_SYSTEM_PROMPT.replace(
-        "{weak_concepts}", ", ".join(weak_concepts) if weak_concepts else "None identified yet"
-    ).replace("{context}", context[:3000] if context else "No specific document context provided")
-
-    messages = history[-10:] + [{"role": "user", "content": message}]
-
-    response = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=1024,
-        system=system,
-        messages=messages
-    )
-
-    return response.content[0].text
+        response_text = _call_ai(message, system_prompt=system, history=history, max_tokens=1024)
+        return response_text
+    except Exception as e:
+        print(f"AI SERVICE ERROR (tutor chat): {e}\n{traceback.format_exc()}")
+        return "⚠️ AI is temporarily unavailable. Please try again in a minute. Error: " + str(e)[:100]

@@ -39,40 +39,51 @@ def run_concept_extraction(document_id: str):
         ).order_by(DocumentChunk.chunk_index).all()
 
         seen_concept_names = set()
-        all_concepts = []
+        
+        # Load existing concepts in case this is a retry
+        existing = db.query(Concept).filter(Concept.document_id == document_id).all()
+        for e in existing:
+            seen_concept_names.add(e.name.lower())
 
-        for chunk in chunks[::2]:
+        total_extracted = 0
+
+        for chunk in chunks:
+            chunk_concepts = []
             try:
                 concepts = extract_concepts_from_chunk(chunk.content)
                 for c in concepts:
                     name = c.get("name", "").strip()
                     if name and name.lower() not in seen_concept_names:
                         seen_concept_names.add(name.lower())
-                        all_concepts.append(c)
+                        chunk_concepts.append(c)
             except Exception as e:
                 print(f"Error extracting from chunk {chunk.chunk_index}: {e}")
                 continue
 
-        for c in all_concepts:
-            concept = Concept(
-                document_id=document_id,
-                name=c.get("name", ""),
-                definition=c.get("definition", ""),
-                category=c.get("category", "General"),
-                difficulty=c.get("difficulty", 3),
-                prerequisites=c.get("prerequisites", []),
-                related_concepts=c.get("related_concepts", [])
-            )
-            db.add(concept)
+            for c in chunk_concepts:
+                concept = Concept(
+                    document_id=document_id,
+                    name=c.get("name", ""),
+                    definition=c.get("definition", ""),
+                    category=c.get("category", "General"),
+                    difficulty=c.get("difficulty", 3),
+                    prerequisites=c.get("prerequisites", []),
+                    related_concepts=c.get("related_concepts", [])
+                )
+                db.add(concept)
+                db.flush()
 
-            memory = MemoryRecord(
-                concept_id=concept.id,
-                next_review=datetime.utcnow()
-            )
-            db.add(memory)
+                memory = MemoryRecord(
+                    concept_id=concept.id,
+                    next_review=datetime.utcnow()
+                )
+                db.add(memory)
+                total_extracted += 1
 
-        db.commit()
-        print(f"Extracted {len(all_concepts)} concepts from document {document_id}")
+            # Commit after each chunk so the progress endpoint sees the new concepts immediately
+            db.commit()
+
+        print(f"Extracted {total_extracted} concepts from document {document_id}")
 
     except Exception as e:
         print(f"Concept extraction failed for {document_id}: {e}")

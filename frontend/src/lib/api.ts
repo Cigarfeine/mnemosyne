@@ -32,13 +32,20 @@ export const memoryAPI = {
 
 export const recallAPI = {
   getQuestions: (conceptId: string) => API.get(`/api/recall/questions/${conceptId}`),
-  generateQuestions: (documentId: string) => API.post(`/api/recall/generate/${documentId}`),
-  getStudySession: (documentId: string) => API.get(`/api/recall/session/${documentId}`),
+  generateQuestions: (documentId: string, studyMode: string = "notes") =>
+    API.post(`/api/recall/generate/${documentId}?study_mode=${studyMode}`),
+  getStudySession: (documentId: string, studyMode: string = "notes") =>
+    API.get(`/api/recall/session/${documentId}?study_mode=${studyMode}`),
 };
 
 export const tutorAPI = {
-  chat: (message: string, documentId?: string, sessionId?: string) =>
-    API.post("/api/tutor/chat", { message, document_id: documentId, session_id: sessionId }),
+  chat: (message: string, documentId?: string, sessionId?: string, studyMode: string = "notes") =>
+    API.post("/api/tutor/chat", { message, document_id: documentId, session_id: sessionId, study_mode: studyMode }),
+};
+
+export const aiAPI = {
+  health: () => API.get("/api/ai/health"),
+  extractionProgress: (documentId: string) => API.get(`/api/extraction/progress/${documentId}`),
 };
 
 export default API;

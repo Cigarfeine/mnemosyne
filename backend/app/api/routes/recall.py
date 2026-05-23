@@ -10,6 +10,7 @@ router = APIRouter()
 async def generate_questions_for_document(
     document_id: str,
     background_tasks: BackgroundTasks,
+    study_mode: str = "notes",
     db: Session = Depends(get_db)
 ):
     concepts = db.query(Concept).filter(Concept.document_id == document_id).all()
@@ -22,11 +23,11 @@ async def generate_questions_for_document(
     if existing > 0:
         return {"message": f"Questions already generated ({existing} questions)"}
 
-    background_tasks.add_task(run_question_generation, [str(c.id) for c in concepts])
+    background_tasks.add_task(run_question_generation, [str(c.id) for c in concepts], study_mode)
     return {"message": f"Generating questions for {len(concepts)} concepts"}
 
 
-def run_question_generation(concept_ids: list):
+def run_question_generation(concept_ids: list, study_mode: str = "notes"):
     from app.models.database import SessionLocal, Concept, ReviewItem
     db = SessionLocal()
 
@@ -41,7 +42,8 @@ def run_question_generation(concept_ids: list):
                     concept.name,
                     concept.definition or "No definition available",
                     concept.difficulty,
-                    num_questions=3
+                    num_questions=3,
+                    study_mode=study_mode
                 )
 
                 for q in questions:
@@ -84,23 +86,55 @@ def get_questions(concept_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/session/{document_id}")
-def get_study_session(document_id: str, limit: int = 10, db: Session = Depends(get_db)):
+def get_study_session(document_id: str, study_mode: str = "notes", limit: int = 10, db: Session = Depends(get_db)):
     from app.models.database import MemoryRecord
     from datetime import datetime
 
     concepts = db.query(Concept).filter(Concept.document_id == document_id).all()
-    due_concept_ids = set()
+    if not concepts:
+        return {"session_items": [], "total_due": 0}
 
+    due_concept_ids = set()
     for c in concepts:
         record = db.query(MemoryRecord).filter(MemoryRecord.concept_id == c.id).first()
         if record and record.next_review and record.next_review <= datetime.utcnow():
             due_concept_ids.add(str(c.id))
 
+    # If no concepts are due, include all (first-time study or all mastered)
+    if not due_concept_ids:
+        due_concept_ids = {str(c.id) for c in concepts}
+
     session_items = []
     for c in concepts:
         if str(c.id) not in due_concept_ids:
             continue
+
         questions = db.query(ReviewItem).filter(ReviewItem.concept_id == c.id).limit(2).all()
+
+        # Auto-generate questions if none exist
+        if not questions:
+            try:
+                generated = generate_questions_for_concept(
+                    c.name, c.definition or "No definition", c.difficulty,
+                    num_questions=3, study_mode=study_mode
+                )
+                for q in generated:
+                    item = ReviewItem(
+                        concept_id=c.id,
+                        question=q.get("question", ""),
+                        question_type=q.get("question_type", "open_recall"),
+                        options=q.get("options"),
+                        correct_answer=q.get("correct_answer", ""),
+                        explanation=q.get("explanation", ""),
+                        difficulty=q.get("difficulty", c.difficulty)
+                    )
+                    db.add(item)
+                db.commit()
+                questions = db.query(ReviewItem).filter(ReviewItem.concept_id == c.id).limit(2).all()
+            except Exception as e:
+                print(f"Auto-generation failed for {c.name}: {e}")
+                continue
+
         if questions:
             session_items.append({
                 "concept_id": str(c.id),
