@@ -9,6 +9,7 @@ import { Wifi, WifiOff, AlertTriangle, Cpu, ArrowRight } from "lucide-react";
 const navLinks = [
   { href: "/", label: "Documents" },
   { href: "/analytics", label: "Analytics" },
+  { href: "/contact", label: "Talk to us" },
 ];
 
 type AIStatus = "healthy" | "rate_limited" | "invalid_key" | "error" | "checking";
@@ -73,7 +74,7 @@ export default function Nav() {
                     <motion.div
                       layoutId="active-nav-pill"
                       className="absolute inset-0 bg-[#1a1a1a] rounded-full shadow-soft"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 35 }}
                     />
                   )}
                   <span className="relative z-10">{link.label}</span>
@@ -81,13 +82,6 @@ export default function Nav() {
               );
             })}
           </div>
-
-          <Link href="/contact" className="hidden sm:flex items-center gap-1 sm:gap-2 bg-[#f8a8b8] hover:bg-[#f292a5] text-slate-900 px-3 sm:px-6 py-1.5 sm:py-2.5 rounded-full font-bold transition-all shadow-sm">
-            <span className="text-xs sm:text-sm hidden sm:inline">Talk to us</span>
-            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/50 flex items-center justify-center">
-              <ArrowRight className="w-3 h-3 text-[#1a1a1a]" />
-            </div>
-          </Link>
 
           <div className="relative ml-2">
             <button
