@@ -17,6 +17,7 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }: ApiKeyModalProp
   useEffect(() => {
     if (isOpen) {
       const stored = localStorage.getItem("mnemosyne_groq_key");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (stored) setApiKey(stored);
       setIsSaved(false);
     }
@@ -82,7 +83,7 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }: ApiKeyModalProp
                 
                 <div className="flex gap-3 sm:gap-4">
                   <div className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-b from-white to-slate-100 shadow-[0_2px_4px_rgba(0,0,0,0.05),_0_1px_0_rgba(255,255,255,1)_inset] border border-slate-200/60 text-slate-600 flex items-center justify-center text-[10px] sm:text-xs font-bold font-sans">2</div>
-                  <p className="text-sm text-slate-700 font-bold mt-1">Click "Create API Key"</p>
+                  <p className="text-sm text-slate-700 font-bold mt-1">Click &quot;Create API Key&quot;</p>
                 </div>
 
                 <div className="flex gap-3 sm:gap-4">

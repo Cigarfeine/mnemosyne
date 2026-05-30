@@ -1,0 +1,35 @@
+UNIVERSITY EXAM - PREVIOUS YEAR QUESTION PAPER
+Subject: Object Oriented Programming Using Java
+Year: 2022
+Max Marks: 100
+
+PART A (Answer all questions)
+1. Explain the difference between checked and unchecked exceptions. (3 marks)
+2. What is a constructor? Can it be overloaded? (3 marks)
+3. Write the syntax for a multi-catch block. (3 marks)
+4. What is the purpose of the 'super' keyword? (3 marks)
+
+PART B
+5. Write a Java program to demonstrate user-defined exception handling. (9 marks)
+6. Explain method overriding with a suitable example program. (9 marks)
+7. What are the different types of inheritance in Java? (9 marks)
+8. Discuss the differences between throw and throws keywords. (9 marks)
+
+---
+
+UNIVERSITY EXAM - PREVIOUS YEAR QUESTION PAPER
+Subject: Object Oriented Programming Using Java
+Year: 2023
+Max Marks: 100
+
+PART A (Answer all questions)
+1. Differentiate between checked and unchecked exceptions with examples. (3 marks)
+2. Explain the concept of data encapsulation. (3 marks)
+3. Can we catch multiple exceptions in a single catch block? Explain. (3 marks)
+4. Define abstract class. (3 marks)
+
+PART B
+5. Write a program to create a custom exception called InvalidAgeException. (9 marks)
+6. Illustrate the concept of interfaces with an example. (9 marks)
+7. Differentiate between throw and throws. (9 marks)
+8. Explain the lifecycle of a thread in Java. (9 marks)
