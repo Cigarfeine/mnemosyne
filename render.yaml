@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: mnemosyne-backend
+    env: docker
+    region: oregon # You can change this to 'frankfurt', 'ohio', or 'singapore'
+    plan: free
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false # You will need to input this manually in the Render Dashboard
