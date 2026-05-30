@@ -35,19 +35,22 @@ def extract_text_from_pdf(pdf_path: str, source_type: str, api_key: str = None) 
     # Pass 2: Scanned PDF fallback using PyMuPDF and Gemini Flash OCR
     ocr_text = []
     try:
-        doc = fitz.open(pdf_path)
-        for page_num in range(len(doc)):
-            page = doc.load_page(page_num)
-            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2)) # 2x zoom for better OCR
-            
-            # Convert PyMuPDF pixmap to PIL Image
-            img_data = pix.tobytes("png")
-            img = Image.open(BytesIO(img_data))
-            
-            # Use Gemini Flash to OCR the image
-            prompt = "Extract all the text from this page exactly as it appears. Do not add any conversational filler."
-            text = process_with_gemini_flash(prompt=prompt, images=[img], api_key=api_key)
-            ocr_text.append(text)
+        with fitz.open(pdf_path) as doc:
+            for page_num in range(len(doc)):
+                page = doc.load_page(page_num)
+                pix = page.get_pixmap(matrix=fitz.Matrix(2, 2)) # 2x zoom for better OCR
+                
+                # Convert PyMuPDF pixmap to PIL Image
+                img_data = pix.tobytes("png")
+                img = Image.open(BytesIO(img_data))
+                
+                try:
+                    # Use Gemini Flash to OCR the image
+                    prompt = "Extract all the text from this page exactly as it appears. Do not add any conversational filler."
+                    text = process_with_gemini_flash(prompt=prompt, images=[img], api_key=api_key)
+                    ocr_text.append(text)
+                finally:
+                    img.close()
             
     except Exception as e:
         print(f"OCR fallback failed: {e}")

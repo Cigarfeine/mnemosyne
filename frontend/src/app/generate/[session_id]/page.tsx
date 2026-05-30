@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import mermaid from "mermaid";
+import DOMPurify from "dompurify";
 
 const MermaidChart = ({ chart }: { chart: string }) => {
   const chartRef = useRef<HTMLDivElement>(null);
@@ -16,7 +17,7 @@ const MermaidChart = ({ chart }: { chart: string }) => {
       const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
       mermaid.render(id, chart).then((result) => {
         if (chartRef.current) {
-          chartRef.current.innerHTML = result.svg;
+          chartRef.current.innerHTML = DOMPurify.sanitize(result.svg, { USE_PROFILES: { svg: true } });
         }
       }).catch(e => {
         console.error("Mermaid parsing error:", e);
@@ -33,11 +34,9 @@ interface PipelineStep {
   status: StepStatus;
 }
 
-import Navbar from '@/components/ui/Navbar';
 
 export default function ProcessingScreen() {
   const { session_id } = useParams();
-  const router = useRouter();
   
   const [markdown, setMarkdown] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +47,9 @@ export default function ProcessingScreen() {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(markdown);
+    navigator.clipboard.writeText(markdown).catch(() => {
+      console.error("Failed to copy to clipboard");
+    });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -333,7 +334,7 @@ export default function ProcessingScreen() {
               />
               <p className="text-xs opacity-50 font-mono mt-2 flex justify-between">
                 <span>Stored locally. Never hits a database.</span>
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" className="underline hover:text-[var(--red)]">Get one here</a>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--red)]">Get one here</a>
               </p>
             </div>
 

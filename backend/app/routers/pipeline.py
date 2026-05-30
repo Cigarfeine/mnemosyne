@@ -1,7 +1,9 @@
 import os
 import json
+import re
 import asyncio
-from fastapi import APIRouter, Header, Request
+import shutil
+from fastapi import APIRouter, Header, Request, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app.services.extractor import extract_text_from_pdf
@@ -12,6 +14,7 @@ from app.services.generator import generate_topic_section_stream
 router = APIRouter()
 
 UPLOAD_DIR = "uploads"
+UUID_PATTERN = re.compile(r'^[a-f0-9\-]{36}$')
 
 # Global state for simple status polling
 session_status = {}
@@ -69,9 +72,10 @@ async def study_pipeline_generator(session_id: str, api_key: str):
             for file in os.listdir(textbooks_dir):
                 notes_text += extract_text_from_pdf(os.path.join(textbooks_dir, file), "textbook", api_key) + "\n\n"
                 
-        # For mock testing: if no PYQ extracted, use mock (since Gemini API might fail without key)
+        # If no PYQ text extracted, fail early instead of using mock data
         if not pyq_text.strip():
-            pyq_text = "Mock PYQ content"
+            yield sse_message("error", message="Could not extract any text from the uploaded PYQ files. Please ensure they are valid PDFs.")
+            return
 
         # Step 2: Analysing
         set_session_status(session_id, "analysing", 2)
@@ -121,12 +125,30 @@ async def study_pipeline_generator(session_id: str, api_key: str):
         yield sse_message("done")
         
     except Exception as e:
-        set_session_status(session_id, "error", 0, status="error", error=str(e))
-        yield sse_message("error", message=str(e))
+        print(f"Pipeline error for session {session_id}: {e}")
+        error_msg = str(e)
+        # Sanitise: pass through quota/rate limit messages, genericise everything else
+        if "429" in error_msg or "quota" in error_msg.lower() or "RESOURCE_EXHAUSTED" in error_msg:
+            safe_msg = error_msg
+        else:
+            safe_msg = "An internal error occurred during generation. Please try again."
+        set_session_status(session_id, "error", 0, status="error", error=safe_msg)
+        yield sse_message("error", message=safe_msg)
+    finally:
+        # Clean up session_status to prevent memory leak
+        session_status.pop(session_id, None)
+        # Clean up uploaded source files (keep study_guide.md)
+        session_dir = os.path.join(UPLOAD_DIR, session_id)
+        for subfolder in ["pyq", "notes", "textbooks"]:
+            path = os.path.join(session_dir, subfolder)
+            if os.path.exists(path):
+                shutil.rmtree(path, ignore_errors=True)
 
 @router.get("/generate/stream/{session_id}")
 async def generate_stream(session_id: str, request: Request, x_api_key: str = Header(default=None)):
     """SSE endpoint for pipeline generation."""
+    if not UUID_PATTERN.match(session_id):
+        raise HTTPException(status_code=400, detail="Invalid session ID format.")
     return StreamingResponse(
         study_pipeline_generator(session_id, x_api_key),
         media_type="text/event-stream",

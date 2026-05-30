@@ -8,14 +8,6 @@ def generate_topic_section_stream(topic: Topic, relevant_notes: list, weightage_
     """
     Yields Markdown text chunks for a single topic section.
     """
-    key_to_use = api_key or os.getenv("GEMINI_API_KEY")
-    if key_to_use == "your_actual_key_here":
-        yield f"## {topic.name}  [Weight: {int(topic.weight * 100)}%]\n\n"
-        yield "This is a mock generated study guide.\n\n"
-        yield "### Core Concepts\n- Mock concept 1\n- Mock concept 2\n\n"
-        yield "```mermaid\ngraph TD;\n    A-->B;\n```\n\n"
-        return
-        
     client = get_gemini_client(api_key)
     
     notes_context = "\n".join(relevant_notes) if relevant_notes else "No relevant notes provided for this topic."

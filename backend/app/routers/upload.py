@@ -8,6 +8,9 @@ router = APIRouter()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB per file
+ALLOWED_EXTENSIONS = {".pdf"}
+
 @router.post("/upload")
 async def upload_documents(
     subject: str = Form(...),
@@ -40,8 +43,19 @@ async def upload_documents(
         for file in files:
             if not file.filename:
                 continue
-            file_path = os.path.join(folder_path, file.filename)
+            # Security: sanitise filename to prevent path traversal
+            safe_name = os.path.basename(file.filename)
+            if not safe_name:
+                continue
+            # Validate file extension
+            ext = os.path.splitext(safe_name)[1].lower()
+            if ext not in ALLOWED_EXTENSIONS:
+                raise HTTPException(status_code=422, detail=f"Only PDF files are accepted. Got: {safe_name}")
             content = await file.read()
+            # Validate file size
+            if len(content) > MAX_FILE_SIZE:
+                raise HTTPException(status_code=413, detail=f"File {safe_name} exceeds 50MB limit.")
+            file_path = os.path.join(folder_path, safe_name)
             with open(file_path, "wb") as f:
                 f.write(content)
             file_count += 1

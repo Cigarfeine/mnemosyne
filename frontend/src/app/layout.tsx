@@ -20,7 +20,6 @@ export const metadata: Metadata = {
 };
 
 import LenisProvider from "@/components/ui/LenisProvider";
-import CustomCursor from "@/components/ui/CustomCursor";
 import Noise from "@/components/ui/Noise";
 import Navbar from "@/components/ui/Navbar";
 

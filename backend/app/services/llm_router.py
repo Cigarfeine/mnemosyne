@@ -18,11 +18,7 @@ def get_gemini_client(api_key: str = None) -> genai.Client:
     return genai.Client(api_key=key_to_use)
 
 def analyze_with_gemini_pro(prompt: str, response_schema=None, api_key: str = None) -> str:
-    """Uses Gemini 1.5 Pro for deep reasoning tasks."""
-    key_to_use = api_key or os.getenv("GEMINI_API_KEY")
-    if key_to_use == "your_actual_key_here":
-        return '{"subject": "Mock Subject", "total_papers_analysed": 1, "total_questions_analysed": 5, "topics": [{"id": "t1", "name": "Topic 1", "frequency": 2, "total_marks": 10, "weight": 1.0, "confidence": 0.9, "question_types": {}, "recurring_patterns": [], "gap_topics": []}], "paper_patterns": [], "predicted_questions": []}'
-    
+    """Uses Gemini 2.5 Flash for deep reasoning tasks."""
     client = get_gemini_client(api_key)
     
     config_args = {}
@@ -45,14 +41,11 @@ def analyze_with_gemini_pro(prompt: str, response_schema=None, api_key: str = No
         )
         return response.text
     except Exception as e:
-        print("====== AVAILABLE MODELS FOR THIS KEY ======")
-        for m in client.models.list():
-            print(m.name)
-        print("===========================================")
+        print(f"Gemini API error: {e}")
         raise e
 
 def process_with_gemini_flash(prompt: str, images: list = None, api_key: str = None) -> str:
-    """Uses Gemini 1.5 Flash for fast OCR and basic text processing."""
+    """Uses Gemini 2.5 Flash for fast OCR and basic text processing."""
     client = get_gemini_client(api_key)
     
     contents = []
@@ -68,8 +61,5 @@ def process_with_gemini_flash(prompt: str, images: list = None, api_key: str = N
         )
         return response.text
     except Exception as e:
-        print("====== AVAILABLE MODELS FOR THIS KEY ======")
-        for m in client.models.list():
-            print(m.name)
-        print("===========================================")
+        print(f"Gemini Flash API error: {e}")
         raise e
