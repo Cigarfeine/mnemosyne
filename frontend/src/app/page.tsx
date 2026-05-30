@@ -100,7 +100,7 @@ export default function LandingPage() {
           yPercent: speed * 100,
           ease: 'none',
           scrollTrigger: {
-            trigger: el,
+            trigger: element,
             start: 'top bottom',
             end: 'bottom top',
             scrub: true
