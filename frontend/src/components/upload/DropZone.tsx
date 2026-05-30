@@ -156,26 +156,57 @@ export default function DropZone() {
         )}
       </div>
 
-      {/* Subject & Notes Controls Row */}
+      {/* Subject, API Key & Notes Controls Row */}
       <div className="grid grid-cols-1 md:grid-cols-12 w-full border-b border-[var(--border)]">
         
         {/* Subject Input */}
-        <div className="col-span-12 md:col-span-6 lg:col-span-8 p-6 md:p-12 border-b md:border-b-0 md:border-r border-[var(--border)] flex flex-col justify-center">
+        <div className="col-span-12 md:col-span-4 p-6 md:p-12 border-b md:border-b-0 md:border-r border-[var(--border)] flex flex-col justify-center bg-[var(--bg)]">
           <div className="relative group/input">
             <label className="text-xs font-bold tracking-widest uppercase mb-4 opacity-50 block transition-all duration-300 group-focus-within/input:-translate-y-1 group-focus-within/input:opacity-100">Subject Name</label>
             <input
               type="text"
-              placeholder="E.g. Object Oriented Programming"
+              placeholder="E.g. OS"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="w-full bg-transparent text-2xl md:text-4xl font-medium placeholder-opacity-20 placeholder:text-[var(--text-muted)] focus:outline-none pb-2 relative z-10"
+              className="w-full bg-transparent text-xl md:text-3xl font-medium placeholder-opacity-20 placeholder:text-[var(--text-muted)] focus:outline-none pb-2 relative z-10"
+            />
+            <div className="absolute bottom-0 left-0 w-full h-[2px] bg-black scale-x-0 origin-left transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-focus-within/input:scale-x-100"></div>
+          </div>
+        </div>
+
+        {/* API Key Input */}
+        <div className="col-span-12 md:col-span-4 p-6 md:p-12 border-b md:border-b-0 md:border-r border-[var(--border)] flex flex-col justify-center bg-[var(--bg)]">
+          <div className="relative group/input">
+            <label className="text-xs font-bold tracking-widest uppercase mb-4 opacity-50 flex justify-between transition-all duration-300 group-focus-within/input:-translate-y-1 group-focus-within/input:opacity-100">
+              <span>Gemini API Key</span>
+              <div className="flex gap-4">
+                {apiKey && (
+                  <button 
+                    onClick={() => {
+                      setApiKey("");
+                      localStorage.removeItem("gemini_api_key");
+                    }}
+                    className="underline hover:text-[var(--red)] z-20 relative"
+                  >
+                    Clear Saved Key
+                  </button>
+                )}
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline hover:text-[var(--red)] z-20 relative">Get Key</a>
+              </div>
+            </label>
+            <input
+              type="password"
+              placeholder="AIzaSy..."
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              className="w-full bg-transparent text-lg md:text-xl font-mono tracking-widest placeholder-opacity-20 placeholder:text-[var(--text-muted)] focus:outline-none pb-2 relative z-10"
             />
             <div className="absolute bottom-0 left-0 w-full h-[2px] bg-black scale-x-0 origin-left transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-focus-within/input:scale-x-100"></div>
           </div>
         </div>
 
         {/* Add Notes Toggle */}
-        <div className="group/btn col-span-12 md:col-span-6 lg:col-span-4 p-6 md:p-12 flex flex-col justify-center cursor-pointer"
+        <div className="group/btn col-span-12 md:col-span-4 p-6 md:p-12 flex flex-col justify-center cursor-pointer bg-[var(--bg)]"
              onClick={() => setShowNotes(!showNotes)}>
            <div className="flex items-center justify-between">
              <span className="relative w-fit text-xl md:text-2xl font-medium tracking-tight">
@@ -229,17 +260,17 @@ export default function DropZone() {
       {/* Massive Generate CTA */}
       <MagneticButton 
         onClick={handleGenerate}
-        disabled={pyqFiles.length === 0 || isUploading}
+        disabled={pyqFiles.length === 0 || isUploading || !apiKey.trim()}
         className={cn(
           "group relative w-full py-12 md:py-16 overflow-hidden text-2xl md:text-5xl font-bold uppercase tracking-tighter rounded-none transition-colors duration-[0.8s] ease-[cubic-bezier(0.76,0,0.24,1)]",
-          pyqFiles.length === 0 
+          (pyqFiles.length === 0 || !apiKey.trim())
             ? "bg-[var(--bg-3)] text-[var(--text-muted)] cursor-not-allowed border-none" 
             : "bg-[var(--bg)] text-black hover:bg-black hover:text-white"
         )}
       >
         <div className="relative z-10 flex items-center justify-center gap-4 w-fit mx-auto">
-          <span>{isUploading ? "Uploading..." : "Analyse & Generate"}</span>
-          {!isUploading && (
+          <span>{isUploading ? "Uploading..." : (pyqFiles.length === 0 ? "Upload PYQs First" : (!apiKey.trim() ? "Enter API Key" : "Analyse & Generate"))}</span>
+          {!isUploading && pyqFiles.length > 0 && apiKey.trim() && (
              <span className="transition-transform duration-[0.8s] ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-4">→</span>
           )}
         </div>
