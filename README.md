@@ -1,71 +1,31 @@
-# Mnemosyne 🧠✨
+# Mnemosyne
 
-A beautiful, AI-powered study companion that uses active recall, spaced repetition, and advanced PDF processing to help you learn faster and ace your exams. 
+**Precision PYQ Study Guides**
 
-![Mnemosyne Screenshot](screenshot.png)
+Mnemosyne is a powerful, AI-driven full-stack application that analyzes your Past Year Questions (PYQs) and course notes to generate highly targeted, exam-optimized study guides.
 
-## ✨ Features
+## Features
+- **AI-Powered Analysis**: Extracts topics, weightages, and recurring patterns from past exams.
+- **Dynamic Study Guides**: Generates beautiful, detailed study notes featuring LaTeX mathematics and Mermaid.js diagrams.
+- **Formal Print Export**: Export generated notes to a pristine, academic-grade PDF.
+- **Bring Your Own Key (BYOK)**: Securely use your own Gemini API key for generation.
 
-- **Smart PDF Processing:** Upload any study material (PDFs) and let the AI instantly break it down into digestible, interconnected key concepts.
-- **Specialized AI Tutors:** 
-  - **Notes Mode:** A patient tutor that explains concepts using analogies and probes your understanding.
-  - **PYQ Mode:** An exam-focused coach that analyzes Previous Year Questions, identifies traps, and teaches you how to score maximum marks.
-- **Interactive Concept Graph:** Visually explore how different topics and ideas connect to one another.
-- **Analytics Dashboard:** Track your learning distribution, weak concepts, and overall mastery over time.
-- **Beautiful, Fluid UI:** A highly responsive frontend built with smooth physics-based animations.
+## Tech Stack
+- **Frontend**: Next.js 15, React, Tailwind CSS, Framer Motion, GSAP, Lenis (Smooth Scrolling)
+- **Backend**: FastAPI (Python), Google Gemini 2.5 Flash
+- **Document Processing**: PyPDF2, regular expressions, and intelligent chunking
 
-## 🛠️ Tech Stack
+## Getting Started
 
-**Frontend**
-- Next.js (App Router)
-- React
-- Tailwind CSS
-- Framer Motion (for physics-based animations)
-- Recharts (for analytics visualization)
-- Lucide React (Icons)
+### Backend Setup
+1. Navigate to the `backend` directory.
+2. Install dependencies: `pip install -r requirements.txt` (or via `uv`).
+3. Set your `GEMINI_API_KEY` in a `.env` file.
+4. Run the server: `uvicorn app.main:app --reload`
 
-**Backend**
-- FastAPI (Python)
-- SQLite (Development) / PostgreSQL (Production ready)
-- Groq AI (Lightning-fast LLM inference)
-- pdfplumber & PyMuPDF (Document processing)
+### Frontend Setup
+1. Navigate to the `frontend` directory.
+2. Install dependencies: `npm install`
+3. Run the development server: `npm run dev`
 
-## 🚀 Getting Started
-
-### 1. Clone the repository
-```bash
-git clone https://github.com/yourusername/mnemosyne.git
-cd mnemosyne
-```
-
-### 2. Backend Setup
-We use [uv](https://github.com/astral-sh/uv) for lightning-fast Python dependency management.
-
-```bash
-cd backend
-uv sync
-
-# Configure your environment variables
-cp .env.example .env
-# Edit .env and add your GROQ_API_KEY (Get it free at https://console.groq.com/keys)
-
-# Start the FastAPI server
-uv run uvicorn app.main:app --reload --port 8000
-```
-
-### 3. Frontend Setup
-```bash
-cd frontend
-npm install
-
-# Start the Next.js development server
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
-
-## 📝 License
-
-Copyright (c) 2026. All rights reserved.
-
-This project is provided for portfolio and demonstration purposes only. You may view and study the Source Code for educational purposes, but you may not copy, modify, distribute, or deploy this software without explicit permission. See the [LICENSE](LICENSE) file for details.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
