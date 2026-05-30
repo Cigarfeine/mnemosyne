@@ -100,7 +100,8 @@ export default function ProcessingScreen() {
 
     const startStream = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/generate/stream/${session_id}`, {
+        const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+        const response = await fetch(`${baseUrl}/api/generate/stream/${session_id}`, {
           method: "GET",
           headers: {
             "x-api-key": apiKey,

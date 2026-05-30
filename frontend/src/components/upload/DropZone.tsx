@@ -84,7 +84,8 @@ export default function DropZone() {
     notesFiles.forEach(file => formData.append("notes", file));
 
     try {
-      const res = await fetch("http://localhost:8000/api/upload", {
+      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      const res = await fetch(`${baseUrl}/api/upload`, {
         method: "POST",
         body: formData,
       });
